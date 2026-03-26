@@ -47,6 +47,9 @@ const SamplesSection = () => {
                 transition={{ delay: i * 0.1 }}
                 onClick={() => setSelectedSample(s)}
               >
+                <div className="absolute top-3 left-3 z-10 pointer-events-none">
+                  <img src="/logo.png" alt="Brand Logo Watermark" className="w-10 sm:w-14 h-auto drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] opacity-90" />
+                </div>
                 {s.media_type === "video" ? (
                   <video
                     src={s.media_url}
@@ -83,6 +86,9 @@ const SamplesSection = () => {
           <DialogTitle className="sr-only">Viewing Sample</DialogTitle>
           {selectedSample && (
             <div className="w-full aspect-video flex items-center justify-center relative">
+              <div className="absolute top-4 left-4 z-20 pointer-events-none">
+                <img src="/logo.png" alt="Brand Logo Watermark" className="w-14 sm:w-20 h-auto drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] opacity-95" />
+              </div>
               {selectedSample.media_type === "video" ? (
                 <video
                   src={selectedSample.media_url}
