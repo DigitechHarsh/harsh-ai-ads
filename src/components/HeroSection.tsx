@@ -37,7 +37,7 @@ const HeroSection = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        High-converting AI ads that turn simple products into luxury visuals
+        High-converting 6-12 second AI ads that turn simple products into luxury visuals
       </motion.p>
 
       <motion.div

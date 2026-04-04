@@ -18,7 +18,9 @@ const OfferSection = () => (
           First 20 Clients — Get Your Cinematic Ad for Just{" "}
           <span className="text-gold-gradient text-3xl md:text-5xl">₹399</span>
         </h2>
-        <p className="text-muted-foreground text-lg mb-2">with 2 revisions included</p>
+        <p className="text-muted-foreground text-lg mb-2">
+          High-quality 6-12 second ad • 2 revisions included
+        </p>
 
         <div className="flex items-center justify-center gap-2 mt-6 text-destructive">
           <Clock className="w-5 h-5" />
