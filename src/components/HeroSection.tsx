@@ -50,7 +50,7 @@ const HeroSection = () => {
           href="#form"
           className="bg-gold-gradient text-primary-foreground font-semibold px-8 py-4 rounded-lg text-lg hover:opacity-90 transition-opacity animate-pulse-glow text-center"
         >
-          Get Your Ad for ₹299
+          Get Your Ad for ₹399
         </a>
         <a
           href="#samples"

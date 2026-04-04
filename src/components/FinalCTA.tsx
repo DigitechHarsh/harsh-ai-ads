@@ -15,7 +15,7 @@ const FinalCTA = () => (
           href="#form"
           className="inline-block bg-gold-gradient text-primary-foreground font-bold px-10 py-4 rounded-lg text-lg hover:opacity-90 transition-opacity animate-pulse-glow"
         >
-          Get Started Now for ₹299
+          Get Started Now for ₹399
         </a>
       </motion.div>
     </div>

@@ -78,7 +78,7 @@ const ContactForm = () => {
             {isEligible ? (
               <>
                 <h2 className="text-2xl md:text-3xl font-display font-bold">
-                  You are eligible for the ₹299 offer 🎉
+                  You are eligible for the ₹399 offer 🎉
                 </h2>
                 <p className="text-muted-foreground text-lg">
                   Congratulations! Our team will contact you shortly to start your project.

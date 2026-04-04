@@ -16,7 +16,7 @@ const OfferSection = () => (
         <Zap className="w-10 h-10 text-gold mx-auto mb-4" />
         <h2 className="text-2xl md:text-4xl font-display font-bold mb-4">
           First 20 Clients — Get Your Cinematic Ad for Just{" "}
-          <span className="text-gold-gradient text-3xl md:text-5xl">₹299</span>
+          <span className="text-gold-gradient text-3xl md:text-5xl">₹399</span>
         </h2>
         <p className="text-muted-foreground text-lg mb-2">with 2 revisions included</p>
 

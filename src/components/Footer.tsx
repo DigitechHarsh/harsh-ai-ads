@@ -9,7 +9,7 @@ const Footer = () => (
         <span className="font-display font-semibold text-lg">Harsh AI Creations</span>
       </div>
       <div className="flex items-center gap-6 text-muted-foreground">
-        <a href="mailto:contact@harshaicreations.com" className="hover:text-gold transition-colors">
+        <a href="mailto:aicreationsbyharsh@gmail.com" className="hover:text-gold transition-colors">
           <Mail className="w-5 h-5" />
         </a>
         <a href="tel:+918160587315" className="hover:text-gold transition-colors">

@@ -218,7 +218,7 @@ export default function AdminDashboard() {
                             <TableCell>{lead.phone}</TableCell>
                             <TableCell>
                               {lead.is_offer_eligible ? (
-                                <Badge className="bg-green-500 hover:bg-green-600">₹299 Offer</Badge>
+                                <Badge className="bg-green-500 hover:bg-green-600">₹399 Offer</Badge>
                               ) : (
                                 <Badge variant="secondary">Standard</Badge>
                               )}
