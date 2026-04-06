@@ -26,6 +26,15 @@ export default function AdminDashboard() {
   const [offerStats, setOfferStats] = useState<{ total_claimed: number; claim_limit: number } | null>(null);
   const [newLimit, setNewLimit] = useState("");
 
+  // Prompts
+  const [prompts, setPrompts] = useState<any[]>([]);
+  const [promptForm, setPromptForm] = useState({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
+
+  const fetchPrompts = async () => {
+    const { data, error } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
+    if (!error && data) setPrompts(data);
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
@@ -35,6 +44,7 @@ export default function AdminDashboard() {
         fetchLeads();
         fetchSamples();
         fetchOfferStats();
+        fetchPrompts();
       }
     });
   }, [navigate]);
@@ -139,6 +149,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSavePrompt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promptForm.title || !promptForm.brand) return toast.error("Title and Brand are required");
+    
+    // Ensure is_free is a boolean
+    const payload = {
+       ...promptForm,
+       is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true
+    };
+    
+    const { error } = await supabase.from("reel_prompts").insert([payload]);
+    if (!error) {
+      toast.success("Prompt added!");
+      setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
+      fetchPrompts();
+    } else {
+      toast.error(error.message);
+    }
+  };
+
+  const handleDeletePrompt = async (id: string) => {
+    const { error } = await supabase.from("reel_prompts").delete().eq("id", id);
+    if (!error) {
+      toast.success("Prompt deleted");
+      fetchPrompts();
+    } else {
+      toast.error(error.message);
+    }
+  };
+
   if (!session) return null;
 
   return (
@@ -156,6 +196,7 @@ export default function AdminDashboard() {
             <TabsTrigger value="leads">Manage Leads</TabsTrigger>
             <TabsTrigger value="offers">Offer Settings</TabsTrigger>
             <TabsTrigger value="samples">Manage Samples</TabsTrigger>
+            <TabsTrigger value="prompts">Prompts Library</TabsTrigger>
           </TabsList>
           
           <TabsContent value="offers" className="space-y-6">
@@ -245,6 +286,89 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="prompts">
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="md:col-span-1 h-fit">
+                <CardHeader>
+                  <CardTitle>Add New Prompt</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSavePrompt} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Title</label>
+                      <Input value={promptForm.title} onChange={(e) => setPromptForm({...promptForm, title: e.target.value})} placeholder="e.g. Shot 1 - Top Down" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Brand / Group</label>
+                      <Input value={promptForm.brand} onChange={(e) => setPromptForm({...promptForm, brand: e.target.value})} placeholder="e.g. Monster Energy" required />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Image Prompt</label>
+                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]" value={promptForm.image_prompt} onChange={(e) => setPromptForm({...promptForm, image_prompt: e.target.value})} placeholder="Main prompt..." />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Negative Prompt</label>
+                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px]" value={promptForm.negative_prompt} onChange={(e) => setPromptForm({...promptForm, negative_prompt: e.target.value})} placeholder="Negative..." />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Video Generation Prompt (JSON/Notes)</label>
+                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[150px] font-mono text-xs" value={promptForm.video_prompt} onChange={(e) => setPromptForm({...promptForm, video_prompt: e.target.value})} placeholder="Video animation prompt..." />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Pricing Status</label>
+                      <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
+                         value={promptForm.is_free ? "true" : "false"} onChange={(e) => setPromptForm({...promptForm, is_free: e.target.value === "true"})}>
+                        <option value="true">Free (Public)</option>
+                        <option value="false">Paid (Premium)</option>
+                      </select>
+                    </div>
+                    <Button type="submit" className="w-full">
+                      Save Prompt
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Existing Prompts</CardTitle>
+                </CardHeader>
+                <CardContent className="max-h-[600px] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Brand</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {prompts.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-medium text-xs">{p.brand}</TableCell>
+                          <TableCell className="text-sm">{p.title}</TableCell>
+                          <TableCell>
+                            {p.is_free ? (
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[10px]">Free</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px]">Paid</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeletePrompt(p.id)} className="text-red-500 h-8 px-2">
+                              <Trash className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="samples">
