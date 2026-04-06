@@ -154,96 +154,97 @@ export default function AdminDashboard() {
         <Tabs defaultValue="leads" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="leads">Manage Leads</TabsTrigger>
+            <TabsTrigger value="offers">Offer Settings</TabsTrigger>
             <TabsTrigger value="samples">Manage Samples</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="offers" className="space-y-6">
+            <Card className="bg-primary/5 border-primary/20 max-w-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
+                <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {offerStats && (
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
+                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 items-end pt-2">
+                  <div className="space-y-1 flex-1">
+                    <label className="text-xs">Update Max Claims Allowed</label>
+                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
+                  </div>
+                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
+                </div>
+
+                <div className="pt-4 border-t border-border/50">
+                  <Button onClick={handleResetOffer} variant="destructive" className="w-full">
+                    <RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="leads" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-primary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
-                  <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {offerStats && (
-                    <div className="flex items-center justify-between text-sm font-medium">
-                      <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
-                      <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-2 items-end pt-2">
-                    <div className="space-y-1 flex-1">
-                      <label className="text-xs">Update Max Claims Allowed</label>
-                      <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
-                    </div>
-                    <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
-                  </div>
-
-                  <div className="pt-4 border-t border-border/50">
-                    <Button onClick={handleResetOffer} variant="destructive" className="w-full">
-                      <RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contact Submissions</CardTitle>
-                  <CardDescription>View all leads and their offer eligibility status.</CardDescription>
-                </CardHeader>
-                <CardContent className="max-h-[500px] overflow-y-auto">
-                  {loadingLeads ? (
-                    <p>Loading leads...</p>
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Client & Product</TableHead>
-                          <TableHead>Product Images</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {leads.map((lead) => (
-                          <TableRow key={lead.id}>
-                            <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
-                            <TableCell className="font-medium">
-                              <div className="text-sm">{lead.name}</div>
-                              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{lead.brand_name}</div>
-                              <div className="text-xs text-primary font-mono mt-1">{lead.phone}</div>
-                              <div className="text-[11px] bg-secondary px-2 py-0.5 rounded inline-block mt-1">{lead.product_type}</div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1 overflow-x-auto max-w-[150px] pb-1">
-                                {lead.product_images && Array.isArray(lead.product_images) && lead.product_images.length > 0 ? (
-                                  (lead.product_images as string[]).map((img, idx) => (
-                                    <a key={idx} href={img} target="_blank" rel="noreferrer" className="flex-shrink-0">
-                                      <img src={img} alt="Product" className="w-8 h-8 rounded object-cover border border-border hover:border-primary transition-colors" />
-                                    </a>
-                                  ))
-                                ) : (
-                                  <span className="text-[10px] text-muted-foreground italic">No images</span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {lead.is_offer_eligible ? (
-                                <Badge className="bg-green-500 hover:bg-green-600 text-[10px] h-5">₹399 Offer</Badge>
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Submissions</CardTitle>
+                <CardDescription>View all leads and their offer eligibility status.</CardDescription>
+              </CardHeader>
+              <CardContent className="max-h-[600px] overflow-y-auto">
+                {loadingLeads ? (
+                  <p>Loading leads...</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Client & Product</TableHead>
+                        <TableHead>Product Images</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {leads.map((lead) => (
+                        <TableRow key={lead.id}>
+                          <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="text-sm">{lead.name}</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{lead.brand_name}</div>
+                            <div className="text-xs text-primary font-mono mt-1">{lead.phone}</div>
+                            <div className="text-[11px] bg-secondary px-2 py-0.5 rounded inline-block mt-1">{lead.product_type}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1 overflow-x-auto max-w-[200px] pb-1">
+                              {lead.product_images && Array.isArray(lead.product_images) && lead.product_images.length > 0 ? (
+                                (lead.product_images as string[]).map((img, idx) => (
+                                  <a key={idx} href={img} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                                    <img src={img} alt="Product" className="w-10 h-10 rounded object-cover border border-border hover:border-primary transition-colors" />
+                                  </a>
+                                ))
                               ) : (
-                                <Badge variant="secondary" className="text-[10px] h-5">Standard</Badge>
+                                <span className="text-[10px] text-muted-foreground italic">No images</span>
                               )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {lead.is_offer_eligible ? (
+                              <Badge className="bg-green-500 hover:bg-green-600 text-[10px] h-5">₹399 Offer</Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-[10px] h-5">Standard</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="samples">

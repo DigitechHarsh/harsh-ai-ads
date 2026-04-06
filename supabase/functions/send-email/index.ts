@@ -13,19 +13,33 @@ serve(async (req) => {
 
   try {
     const { email, name, isEligible } = await req.json();
+    console.log(`Step 1: Attempting to send email to ${email} for user ${name}`);
 
+    const smtpHost = Deno.env.get("SMTP_HOST");
+    const smtpPort = Deno.env.get("SMTP_PORT");
+    const smtpUser = Deno.env.get("SMTP_USER");
+    const smtpPass = Deno.env.get("SMTP_PASS");
+
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
+      console.error("Step 2 Error: Missing SMTP secrets in Supabase Dashboard!");
+      console.log(`Current Secrets: HOST=${!!smtpHost}, PORT=${!!smtpPort}, USER=${!!smtpUser}, PASS=${!!smtpPass}`);
+      throw new Error("Missing SMTP configuration secrets.");
+    }
+
+    console.log(`Step 3: Creating transporter with ${smtpHost}:${smtpPort}`);
     const transporter = nodemailer.createTransport({
-      host: Deno.env.get("SMTP_HOST"),
-      port: Number(Deno.env.get("SMTP_PORT")),
-      secure: false, // true for 465, false for other ports
+      host: smtpHost,
+      port: Number(smtpPort),
+      secure: Number(smtpPort) === 465, // Use SSL for 465
       auth: {
-        user: Deno.env.get("SMTP_USER"),
-        pass: Deno.env.get("SMTP_PASS"),
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
 
-    const info = await transporter.sendMail({
-      from: `"Harsh AI Creations" <${Deno.env.get("SMTP_USER")}>`,
+    console.log("Step 4: Preparing the mail content...");
+    const mailOptions = {
+      from: `"Harsh AI Creations" <${smtpUser}>`,
       to: email,
       subject: isEligible 
         ? "Your request was received! (₹399 Offer Applied 🎉)" 
@@ -54,13 +68,18 @@ serve(async (req) => {
             <p>Best regards,<br/>The Harsh AI Creations Team</p>
           </div>
         `
-    });
+    };
+
+    console.log("Step 5: Sending the email via SMTP...");
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Step 6 Success: Email sent successfully! MessageID: ${info.messageId}`);
 
     return new Response(JSON.stringify({ success: true, messageId: info.messageId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error: any) {
+    console.error(`CRITICAL FAILURE: ${error.message}`);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
