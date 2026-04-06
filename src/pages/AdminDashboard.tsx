@@ -201,26 +201,39 @@ export default function AdminDashboard() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Date</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Phone</TableHead>
+                          <TableHead>Client & Product</TableHead>
+                          <TableHead>Product Images</TableHead>
                           <TableHead>Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {leads.map((lead) => (
                           <TableRow key={lead.id}>
-                            <TableCell>{new Date(lead.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
                             <TableCell className="font-medium">
-                              {lead.name}
-                              <div className="text-xs text-muted-foreground">{lead.email}</div>
-                              <div className="text-xs text-muted-foreground">{lead.product_type}</div>
+                              <div className="text-sm">{lead.name}</div>
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{lead.brand_name}</div>
+                              <div className="text-xs text-primary font-mono mt-1">{lead.phone}</div>
+                              <div className="text-[11px] bg-secondary px-2 py-0.5 rounded inline-block mt-1">{lead.product_type}</div>
                             </TableCell>
-                            <TableCell>{lead.phone}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 overflow-x-auto max-w-[150px] pb-1">
+                                {lead.product_images && Array.isArray(lead.product_images) && lead.product_images.length > 0 ? (
+                                  (lead.product_images as string[]).map((img, idx) => (
+                                    <a key={idx} href={img} target="_blank" rel="noreferrer" className="flex-shrink-0">
+                                      <img src={img} alt="Product" className="w-8 h-8 rounded object-cover border border-border hover:border-primary transition-colors" />
+                                    </a>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground italic">No images</span>
+                                )}
+                              </div>
+                            </TableCell>
                             <TableCell>
                               {lead.is_offer_eligible ? (
-                                <Badge className="bg-green-500 hover:bg-green-600">₹399 Offer</Badge>
+                                <Badge className="bg-green-500 hover:bg-green-600 text-[10px] h-5">₹399 Offer</Badge>
                               ) : (
-                                <Badge variant="secondary">Standard</Badge>
+                                <Badge variant="secondary" className="text-[10px] h-5">Standard</Badge>
                               )}
                             </TableCell>
                           </TableRow>
