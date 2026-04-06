@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [campaignBrand, setCampaignBrand] = useState("");
   const [campaignFile, setCampaignFile] = useState<File | null>(null);
+  const [campaignUrl, setCampaignUrl] = useState("");
 
   const fetchPrompts = async () => {
     const { data: pData, error: pError } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
@@ -158,25 +159,30 @@ export default function AdminDashboard() {
 
   const handleSaveCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!campaignBrand || !campaignFile) return toast.error("Brand and image required");
+    if (!campaignBrand || (!campaignFile && !campaignUrl)) return toast.error("Brand and image file OR link required");
     setUploading(true);
 
-    const fileExt = campaignFile.name.split(".").pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    let finalUrl = campaignUrl;
 
-    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, campaignFile);
-    if (uploadError) {
-      toast.error(uploadError.message);
-      setUploading(false);
-      return;
+    if (campaignFile) {
+      const fileExt = campaignFile.name.split(".").pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, campaignFile);
+      if (uploadError) {
+        toast.error(uploadError.message);
+        setUploading(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
+      finalUrl = publicUrl;
     }
-
-    const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
 
     const { error: dbError } = await supabase.from("prompt_campaigns").upsert({
       brand_name: campaignBrand,
-      image_url: publicUrl,
+      image_url: finalUrl,
     });
 
     if (dbError) {
@@ -185,6 +191,7 @@ export default function AdminDashboard() {
       toast.success("Campaign Image Saved!");
       setCampaignBrand("");
       setCampaignFile(null);
+      setCampaignUrl("");
       fetchPrompts(); // re-fetch campaigns
     }
     setUploading(false);
@@ -352,8 +359,18 @@ export default function AdminDashboard() {
                 <CardContent>
                   <form onSubmit={handleSaveCampaign} className="space-y-4">
                     <Input placeholder="Brand Name (e.g. Monster Energy)" value={campaignBrand} onChange={(e) => setCampaignBrand(e.target.value)} required />
-                    <Input type="file" accept="image/*" onChange={(e) => setCampaignFile(e.target.files?.[0] || null)} required />
-                    <Button type="submit" disabled={uploading} className="w-full">
+                    
+                    <div className="space-y-2 p-3 bg-black/20 rounded-md border border-border/50">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase opacity-80">Option 1: Device Upload</label>
+                      <Input type="file" accept="image/*" onChange={(e) => setCampaignFile(e.target.files?.[0] || null)} />
+                    </div>
+
+                    <div className="space-y-2 p-3 bg-black/20 rounded-md border border-border/50">
+                      <label className="text-xs font-semibold text-muted-foreground uppercase opacity-80">Option 2: Drive URL / Image Link</label>
+                      <Input placeholder="Or paste any URL..." value={campaignUrl} onChange={(e) => setCampaignUrl(e.target.value)} />
+                    </div>
+                    
+                    <Button type="submit" disabled={uploading} className="w-full mt-2">
                       {uploading ? "Saving..." : "Save Cover"}
                     </Button>
                   </form>

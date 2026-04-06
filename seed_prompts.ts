@@ -60,6 +60,21 @@ async function extractAndSeed() {
       console.error("Failed to parse or insert chunk", i, e);
     }
   }
+
+  console.log("Setting up the Campaign Card for Monster Energy...");
+  
+  // Insert the Campaign Cover so it shows up in the new Grid format automatically
+  const { error: campError } = await supabase.from('prompt_campaigns').upsert({
+    brand_name: "Monster Energy",
+    image_url: "https://images.unsplash.com/photo-1582236357488-1c4db239fdb2?q=80&w=1964&auto=format&fit=crop" // Temporary high quality splash image
+  });
+
+  if (campError) {
+    console.error("Failed to set Campaign cover:", campError.message);
+  } else {
+    console.log("Campaign Cover set successfully!");
+  }
+
   console.log("Done inserting!");
 }
 
