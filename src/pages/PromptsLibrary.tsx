@@ -8,22 +8,22 @@ import { Link } from "react-router-dom";
 
 export default function PromptsLibrary() {
   const [prompts, setPrompts] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPrompts();
+    fetchData();
   }, []);
 
-  const fetchPrompts = async () => {
-    const { data, error } = await supabase
-      .from("reel_prompts")
-      .select("*")
-      .order("created_at", { ascending: true });
-      
-    if (!error && data) {
-      setPrompts(data);
-    }
+  const fetchData = async () => {
+    const { data: cData } = await supabase.from("prompt_campaigns").select("*");
+    if (cData) setCampaigns(cData);
+
+    const { data: pData } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: true });
+    if (pData) setPrompts(pData);
+    
     setLoading(false);
   };
 
@@ -37,11 +37,17 @@ export default function PromptsLibrary() {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-4">
-        <Link to="/">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+        {selectedCampaign ? (
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white" onClick={() => setSelectedCampaign(null)}>
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Campaigns
           </Button>
-        </Link>
+        ) : (
+          <Link to="/">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+            </Button>
+          </Link>
+        )}
       </div>
       
       <div className="pt-10 pb-16 px-6 max-w-6xl mx-auto">
@@ -50,10 +56,10 @@ export default function PromptsLibrary() {
             <Sparkles className="w-4 h-4 mr-2 text-primary" /> The Secret Sauce
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold font-display uppercase tracking-wider mb-4">
-            Cinematic AI <span className="text-primary">Prompts</span>
+            {selectedCampaign ? selectedCampaign.brand_name : "Cinematic AI Prompts"}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Copy the exact prompts we use to generate high-end, premium product commercials. 
+            {selectedCampaign ? `Exclusive prompts used for the ${selectedCampaign.brand_name} campaign.` : "Select a campaign to explore the exact prompts used to generate our high-end, premium commercials."}
           </p>
         </div>
 
@@ -61,15 +67,37 @@ export default function PromptsLibrary() {
           <div className="text-center py-20 animate-pulse text-muted-foreground">
             Loading visual prompts...
           </div>
+        ) : !selectedCampaign ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {campaigns.map(c => (
+              <div 
+                key={c.brand_name} 
+                className="group relative cursor-pointer rounded-2xl overflow-hidden border border-border/50 hover:border-primary/50 transition-all aspect-[4/3] bg-card"
+                onClick={() => setSelectedCampaign(c)}
+              >
+                <img src={c.image_url} alt={c.brand_name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6">
+                  <h3 className="text-2xl font-bold font-display uppercase transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                    {c.brand_name}
+                  </h3>
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 text-primary text-sm flex items-center">
+                    Explore Prompts <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            {campaigns.length === 0 && (
+              <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed rounded-2xl">
+                No campaigns published yet.
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-8">
-            {prompts.map((p) => (
+          <div className="grid md:grid-cols-2 gap-8 animate-fade-up">
+            {prompts.filter(p => p.brand === selectedCampaign.brand_name).map((p) => (
               <div key={p.id} className="bg-card border border-border/50 rounded-2xl p-6 hover:border-primary/30 transition-all group">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <Badge variant="outline" className="mb-2 text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[10px]">
-                      {p.brand}
-                    </Badge>
                     <h2 className="text-xl font-bold">{p.title}</h2>
                   </div>
                   

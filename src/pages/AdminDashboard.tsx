@@ -30,9 +30,16 @@ export default function AdminDashboard() {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [promptForm, setPromptForm] = useState({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
 
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaignBrand, setCampaignBrand] = useState("");
+  const [campaignFile, setCampaignFile] = useState<File | null>(null);
+
   const fetchPrompts = async () => {
-    const { data, error } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
-    if (!error && data) setPrompts(data);
+    const { data: pData, error: pError } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
+    if (!pError && pData) setPrompts(pData);
+    
+    const { data: cData, error: cError } = await supabase.from("prompt_campaigns").select("*");
+    if (!cError && cData) setCampaigns(cData);
   };
 
   useEffect(() => {
@@ -148,6 +155,51 @@ export default function AdminDashboard() {
       toast.error(error.message);
     }
   };
+
+  const handleSaveCampaign = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!campaignBrand || !campaignFile) return toast.error("Brand and image required");
+    setUploading(true);
+
+    const fileExt = campaignFile.name.split(".").pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, campaignFile);
+    if (uploadError) {
+      toast.error(uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
+
+    const { error: dbError } = await supabase.from("prompt_campaigns").upsert({
+      brand_name: campaignBrand,
+      image_url: publicUrl,
+    });
+
+    if (dbError) {
+      toast.error(dbError.message);
+    } else {
+      toast.success("Campaign Image Saved!");
+      setCampaignBrand("");
+      setCampaignFile(null);
+      fetchPrompts(); // re-fetch campaigns
+    }
+    setUploading(false);
+  };
+
+  const handleDeleteCampaign = async (brand_name: string) => {
+    const { error } = await supabase.from("prompt_campaigns").delete().eq("brand_name", brand_name);
+    if (!error) {
+      toast.success("Campaign deleted");
+      fetchPrompts();
+    } else {
+      toast.error(error.message);
+    }
+  };
+
 
   const handleSavePrompt = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,7 +340,53 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="prompts">
+          <TabsContent value="prompts" className="space-y-8">
+
+            {/* Campaign Covers Management */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="md:col-span-1 border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <CardTitle>Campaign Covers</CardTitle>
+                  <CardDescription>Upload a cover image for a product brand.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSaveCampaign} className="space-y-4">
+                    <Input placeholder="Brand Name (e.g. Monster Energy)" value={campaignBrand} onChange={(e) => setCampaignBrand(e.target.value)} required />
+                    <Input type="file" accept="image/*" onChange={(e) => setCampaignFile(e.target.files?.[0] || null)} required />
+                    <Button type="submit" disabled={uploading} className="w-full">
+                      {uploading ? "Saving..." : "Save Cover"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Active Campaigns</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                  {campaigns.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No campaign covers set yet.</p>
+                  ) : (
+                    campaigns.map(c => (
+                      <div key={c.brand_name} className="relative group w-32 h-32 rounded-xl overflow-hidden border border-border">
+                        <img src={c.image_url} alt={c.brand_name} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2 text-center text-xs font-bold leading-tight">
+                          {c.brand_name}
+                        </div>
+                        <Button 
+                          variant="destructive" size="icon" className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100"
+                          onClick={() => handleDeleteCampaign(c.brand_name)}>
+                          <Trash className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Prompts Management */}
             <div className="grid md:grid-cols-3 gap-6">
               <Card className="md:col-span-1 h-fit">
                 <CardHeader>
