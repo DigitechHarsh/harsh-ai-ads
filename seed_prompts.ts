@@ -66,7 +66,7 @@ async function extractAndSeed() {
   // Insert the Campaign Cover so it shows up in the new Grid format automatically
   const { error: campError } = await supabase.from('prompt_campaigns').upsert({
     brand_name: "Monster Energy",
-    image_url: "https://images.unsplash.com/photo-1582236357488-1c4db239fdb2?q=80&w=1964&auto=format&fit=crop" // Temporary high quality splash image
+    image_url: "/m4.png" // Points to the new image placed in the public/ folder
   });
 
   if (campError) {
