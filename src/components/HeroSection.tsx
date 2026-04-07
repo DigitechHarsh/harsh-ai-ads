@@ -54,10 +54,12 @@ const HeroSection = () => {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   className="space-y-8 text-left z-10 p-2"
                 >
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-bold uppercase tracking-widest animate-pulse">
-                    <Sparkles className="w-3 h-3" />
-                    <span>New Launch Offer</span>
-                  </div>
+                  {banner.is_offer && (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Special Offer</span>
+                    </div>
+                  )}
 
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-[1.1] tracking-tight">
                     {banner.title.split(' ').map((word: string, i: number) => (

@@ -28,8 +28,10 @@ export default function AdminDashboard() {
 
   // Banners
   const [banners, setBanners] = useState<any[]>([]);
-  const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image' });
+  const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image', is_offer: false, marquee_text: '' });
+  const [offerForm, setOfferForm] = useState({ title: '', subtitle: '', cta_text: 'Claim Offer', cta_link: '#form', media_type: 'image', marquee_text: '' });
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [offerFile, setOfferFile] = useState<File | null>(null);
 
   // Prompts & Campaigns
   const [prompts, setPrompts] = useState<any[]>([]);
@@ -209,16 +211,19 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleSaveBanner = async (e: React.FormEvent) => {
+  const handleSaveBanner = async (e: React.FormEvent, type: 'regular' | 'offer' = 'regular') => {
     e.preventDefault();
-    if (!bannerFile || !bannerForm.title) return toast.error("Title and Media file required");
+    const currentForm = type === 'regular' ? bannerForm : { ...offerForm, is_offer: true };
+    const currentFile = type === 'regular' ? bannerFile : offerFile;
+
+    if (!currentFile || !currentForm.title) return toast.error("Title and Media file required");
     setUploading(true);
 
-    const fileExt = bannerFile.name.split(".").pop();
+    const fileExt = currentFile.name.split(".").pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `hero/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, bannerFile);
+    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, currentFile);
     if (uploadError) {
       toast.error(uploadError.message);
       setUploading(false);
@@ -228,16 +233,21 @@ export default function AdminDashboard() {
     const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
 
     const { error: dbError } = await (supabase.from("hero_banners" as any) as any).insert({
-      ...bannerForm,
+      ...currentForm,
       media_url: publicUrl,
     });
 
     if (dbError) {
       toast.error(dbError.message);
     } else {
-      toast.success("Hero Banner Added!");
-      setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image' });
-      setBannerFile(null);
+      toast.success(type === 'regular' ? "Hero Banner Added!" : "Offer Campaign Added!");
+      if (type === 'regular') {
+        setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image', is_offer: false, marquee_text: '' });
+        setBannerFile(null);
+      } else {
+        setOfferForm({ title: '', subtitle: '', cta_text: 'Claim Offer', cta_link: '#form', media_type: 'image', marquee_text: '' });
+        setOfferFile(null);
+      }
       fetchPrompts();
     }
     setUploading(false);
@@ -427,28 +437,76 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="offers" className="space-y-6">
-            <Card className="bg-primary/5 border-primary/20 max-w-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
-                <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {offerStats && (
-                  <div className="flex items-center justify-between text-sm font-medium">
-                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
-                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
+                  <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {offerStats && (
+                    <div className="flex items-center justify-between text-sm font-medium">
+                      <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
+                      <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
+                    </div>
+                  )}
+                  <div className="flex gap-2 items-end pt-2">
+                    <div className="space-y-1 flex-1">
+                      <label className="text-xs">Update Max Claims Allowed</label>
+                      <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
+                    </div>
+                    <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
                   </div>
-                )}
-                <div className="flex gap-2 items-end pt-2">
-                  <div className="space-y-1 flex-1">
-                    <label className="text-xs">Update Max Claims Allowed</label>
-                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
+                  <div className="pt-4 border-t border-border/50">
+                    <Button onClick={handleResetOffer} variant="destructive" className="w-full"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)</Button>
                   </div>
-                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
-                </div>
-                <div className="pt-4 border-t border-border/50">
-                  <Button onClick={handleResetOffer} variant="destructive" className="w-full"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)</Button>
-                </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Launch New Offer</CardTitle>
+                  <CardDescription>This will appear in the Marquee and Hero Slider.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <form onSubmit={(e) => handleSaveBanner(e, 'offer')} className="space-y-4">
+                      <Input placeholder="Offer Title" value={offerForm.title} onChange={e => setOfferForm({...offerForm, title: e.target.value})} />
+                      <Input placeholder="Offer Subtitle" value={offerForm.subtitle} onChange={e => setOfferForm({...offerForm, subtitle: e.target.value})} />
+                      <Input placeholder="Marquee Scrolling Text (Attractive)" value={offerForm.marquee_text} onChange={e => setOfferForm({...offerForm, marquee_text: e.target.value})} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input placeholder="CTA Text" value={offerForm.cta_text} onChange={e => setOfferForm({...offerForm, cta_text: e.target.value})} />
+                        <Input placeholder="CTA Link" value={offerForm.cta_link} onChange={e => setOfferForm({...offerForm, cta_link: e.target.value})} />
+                      </div>
+                      <select className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm" value={offerForm.media_type} onChange={e => setOfferForm({...offerForm, media_type: e.target.value})}>
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                      </select>
+                      <Input type="file" onChange={e => setOfferFile(e.target.files?.[0] || null)} />
+                      <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Launching..." : "Launch Offer"}</Button>
+                   </form>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader><CardTitle>Active Offer Campaigns</CardTitle></CardHeader>
+              <CardContent>
+                 <div className="grid md:grid-cols-2 gap-4">
+                    {banners.filter(b => b.is_offer).map(b => (
+                      <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-primary/5 border-primary/20 group relative">
+                        <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
+                          {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
+                        </div>
+                        <div className="flex-grow">
+                          <h4 className="font-bold text-sm text-primary">{b.title}</h4>
+                          <p className="text-[10px] text-muted-foreground line-clamp-1 italic italic mb-1">"{b.marquee_text}"</p>
+                          <Badge variant="outline" className="text-[10px] bg-primary/10">ACTIVE OFFER</Badge>
+                        </div>
+                        <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
+                      </div>
+                    ))}
+                    {banners.filter(b => b.is_offer).length === 0 && <p className="text-muted-foreground text-sm py-4">No active offer campaigns.</p>}
+                 </div>
               </CardContent>
             </Card>
           </TabsContent>
