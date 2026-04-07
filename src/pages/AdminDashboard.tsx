@@ -8,12 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash, LogOut, Settings2, RotateCcw, Plus, ExternalLink, Users, Zap, Layout as LayoutIcon, Sparkles } from "lucide-react";
+import { Trash, LogOut, Settings2, RotateCcw, Plus, ExternalLink, Users, Zap, Layout as LayoutIcon, Sparkles, Search } from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
   const [siteStats, setSiteStats] = useState({ total_leads: 0, active_offers: 0 });
+  const [searchTerm, setSearchTerm] = useState("");
   
   const [leads, setLeads] = useState<any[]>([]);
   const [loadingLeads, setLoadingLeads] = useState(true);
@@ -316,6 +317,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const filteredLeads = leads.filter(l => 
+    l.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    l.brand_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    l.phone?.includes(searchTerm) ||
+    l.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredBanners = banners.filter(b => 
+    b.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    b.subtitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    b.marquee_text?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSamples = samples.filter(s => 
+    s.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredPrompts = prompts.filter(p => 
+    p.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (!session) return null;
 
   return (
@@ -406,9 +429,20 @@ export default function AdminDashboard() {
 
           <TabsContent value="submissions">
             <Card>
-              <CardHeader>
-                <CardTitle>Contact Submissions</CardTitle>
-                <CardDescription>View all leads and their offer eligibility status.</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+                <div>
+                  <CardTitle>Contact Submissions</CardTitle>
+                  <CardDescription>View all leads and their offer eligibility status.</CardDescription>
+                </div>
+                <div className="relative w-64">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                   <Input 
+                    placeholder="Search leads..." 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="pl-9 bg-secondary/50 border-none"
+                   />
+                </div>
               </CardHeader>
               <CardContent className="max-h-[600px] overflow-y-auto">
                 {loadingLeads ? (
@@ -424,7 +458,7 @@ export default function AdminDashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {leads.map((lead) => (
+                      {filteredLeads.map((lead) => (
                         <TableRow key={lead.id}>
                           <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
                           <TableCell className="font-medium">
@@ -486,9 +520,20 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
               <Card className="md:col-span-2">
-                <CardHeader><CardTitle>Manage Banners</CardTitle></CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                  <CardTitle>Manage Banners</CardTitle>
+                  <div className="relative w-48">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                     <Input 
+                      placeholder="Search banners..." 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)} 
+                      className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                     />
+                  </div>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  {banners.map(b => (
+                  {filteredBanners.filter(b => !b.is_offer).map(b => (
                     <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-secondary/20 group">
                       <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
                         {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
@@ -501,7 +546,7 @@ export default function AdminDashboard() {
                       <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
                     </div>
                   ))}
-                  {banners.length === 0 && <p className="text-center py-10 text-muted-foreground text-sm">No banners created yet.</p>}
+                  {filteredBanners.filter(b => !b.is_offer).length === 0 && <p className="text-center py-10 text-muted-foreground text-sm">No banners found.</p>}
                 </CardContent>
               </Card>
             </div>
@@ -560,10 +605,21 @@ export default function AdminDashboard() {
             </div>
 
             <Card>
-              <CardHeader><CardTitle>Active Offer Campaigns</CardTitle></CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle>Active Offer Campaigns</CardTitle>
+                <div className="relative w-48">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                   <Input 
+                    placeholder="Search offers..." 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                   />
+                </div>
+              </CardHeader>
               <CardContent>
                  <div className="grid md:grid-cols-2 gap-4">
-                    {banners.filter(b => b.is_offer).map(b => (
+                    {filteredBanners.filter(b => b.is_offer).map(b => (
                       <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-primary/5 border-primary/20 group relative">
                         <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
                           {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
@@ -576,7 +632,7 @@ export default function AdminDashboard() {
                         <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
                       </div>
                     ))}
-                    {banners.filter(b => b.is_offer).length === 0 && <p className="text-muted-foreground text-sm py-4">No active offer campaigns.</p>}
+                    {filteredBanners.filter(b => b.is_offer).length === 0 && <p className="text-muted-foreground text-sm py-4">No matching offer campaigns.</p>}
                  </div>
               </CardContent>
             </Card>
@@ -595,14 +651,26 @@ export default function AdminDashboard() {
                  </CardContent>
                </Card>
                <Card className="md:col-span-2">
-                  <CardHeader><CardTitle>Active Portfolio</CardTitle></CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardTitle>Active Portfolio</CardTitle>
+                    <div className="relative w-48">
+                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                       <Input 
+                        placeholder="Search portfolio..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                       />
+                    </div>
+                  </CardHeader>
                   <CardContent className="grid grid-cols-3 gap-4">
-                     {samples.map(s => (
+                     {filteredSamples.map(s => (
                         <div key={s.id} className="relative group rounded-lg overflow-hidden border">
                            {s.media_type === 'video' ? <video src={s.media_url} className="w-full aspect-square object-cover" /> : <img src={s.media_url} className="w-full aspect-square object-cover" />}
                            <Button variant="destructive" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
                         </div>
                      ))}
+                     {filteredSamples.length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No samples found.</p>}
                   </CardContent>
                </Card>
              </div>
@@ -627,12 +695,23 @@ export default function AdminDashboard() {
                    </CardContent>
                 </Card>
                 <Card className="md:col-span-2">
-                   <CardHeader><CardTitle>Existing Prompts</CardTitle></CardHeader>
+                   <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                      <CardTitle>Existing Prompts</CardTitle>
+                      <div className="relative w-48">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                         <Input 
+                          placeholder="Search prompts..." 
+                          value={searchTerm} 
+                          onChange={(e) => setSearchTerm(e.target.value)} 
+                          className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                         />
+                      </div>
+                   </CardHeader>
                    <CardContent>
                       <Table>
                          <TableHeader><TableRow><TableHead>Ad / Cover</TableHead><TableHead>Brand</TableHead><TableHead>Title</TableHead><TableHead></TableHead></TableRow></TableHeader>
                          <TableBody>
-                            {prompts.map(p => (
+                            {filteredPrompts.map(p => (
                                <TableRow key={p.id}>
                                   <TableCell>
                                      {p.media_url ? (
