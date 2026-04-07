@@ -38,6 +38,7 @@ export default function AdminDashboard() {
   const [campaignBrand, setCampaignBrand] = useState("");
   const [campaignFile, setCampaignFile] = useState<File | null>(null);
   const [campaignUrl, setCampaignUrl] = useState("");
+  const [promptFile, setPromptFile] = useState<File | null>(null);
 
   const fetchPrompts = async () => {
     const { data: pData, error: pError } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
     const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
     const mediaType = file.type.startsWith("video/") ? "video" : "image";
 
-    const { error: dbError } = await supabase.from("samples").insert({
+    const { error: dbError } = await (supabase.from("samples" as any) as any).insert({
       title,
       media_type: mediaType,
       media_url: publicUrl,
@@ -181,7 +182,7 @@ export default function AdminDashboard() {
       finalUrl = publicUrl;
     }
 
-    const { error: dbError } = await supabase.from("prompt_campaigns").upsert({
+    const { error: dbError } = await (supabase.from("prompt_campaigns" as any) as any).upsert({
       brand_name: campaignBrand,
       image_url: finalUrl,
     });
@@ -255,19 +256,44 @@ export default function AdminDashboard() {
   const handleSavePrompt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!promptForm.title || !promptForm.brand) return toast.error("Title and Brand are required");
-    const payload = { ...promptForm, is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true };
+    setUploading(true);
+
+    let finalImageUrl = promptForm.media_url;
+    if (promptFile) {
+      const fileExt = promptFile.name.split(".").pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `prompts/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, promptFile);
+      if (uploadError) {
+        toast.error(uploadError.message);
+        setUploading(false);
+        return;
+      }
+      const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
+      finalImageUrl = publicUrl;
+    }
+
+    const payload = { 
+      ...promptForm, 
+      media_url: finalImageUrl,
+      is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true 
+    };
+
     const { error } = await (supabase.from("reel_prompts" as any) as any).insert([payload]);
     if (!error) {
       toast.success("Prompt added!");
       setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
+      setPromptFile(null);
       fetchPrompts();
     } else {
       toast.error(error.message);
     }
+    setUploading(false);
   };
 
   const handleDeletePrompt = async (id: string) => {
-    const { error } = await supabase.from("reel_prompts").delete().eq("id", id);
+    const { error } = await supabase.from("reel_prompts" as any).delete().eq("id", id);
     if (!error) {
       toast.success("Prompt deleted");
       fetchPrompts();
@@ -461,9 +487,13 @@ export default function AdminDashboard() {
                       <form onSubmit={handleSavePrompt} className="space-y-4">
                          <Input placeholder="Title" value={promptForm.title} onChange={e => setPromptForm({...promptForm, title: e.target.value})} />
                          <Input placeholder="Brand" value={promptForm.brand} onChange={e => setPromptForm({...promptForm, brand: e.target.value})} />
+                         <div className="space-y-1">
+                           <label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Cover Image</label>
+                           <Input type="file" onChange={e => setPromptFile(e.target.files?.[0] || null)} />
+                         </div>
                          <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Image Prompt" value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} />
                          <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Video Prompt" value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} />
-                         <Button type="submit">Save Prompt</Button>
+                         <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : "Save Prompt"}</Button>
                       </form>
                    </CardContent>
                 </Card>
@@ -471,10 +501,17 @@ export default function AdminDashboard() {
                    <CardHeader><CardTitle>Existing Prompts</CardTitle></CardHeader>
                    <CardContent>
                       <Table>
-                         <TableHeader><TableRow><TableHead>Brand</TableHead><TableHead>Title</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                         <TableHeader><TableRow><TableHead>Ad / Cover</TableHead><TableHead>Brand</TableHead><TableHead>Title</TableHead><TableHead></TableHead></TableRow></TableHeader>
                          <TableBody>
                             {prompts.map(p => (
                                <TableRow key={p.id}>
+                                  <TableCell>
+                                     {p.media_url ? (
+                                       <img src={p.media_url} className="w-12 h-12 rounded object-cover border" />
+                                     ) : (
+                                       <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center text-[10px] text-muted-foreground italic">No Image</div>
+                                     )}
+                                  </TableCell>
                                   <TableCell>{p.brand}</TableCell>
                                   <TableCell>{p.title}</TableCell>
                                   <TableCell><Button variant="ghost" size="icon" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4 text-red-500" /></Button></TableCell>
