@@ -51,7 +51,7 @@ serve(async (req) => {
             <p>Thank you for choosing <strong>Harsh AI Creations</strong>!</p>
             <p><strong>Order Confirmed!</strong> You have successfully claimed our <strong>₹399 Cinematic Ad</strong> offer.</p>
             <div style="background: #f9f9f9; padding: 15px; border-left: 4px solid #D4AF37; margin: 20px 0;">
-              <p style="margin: 0; font-weight: bold;">🚀 Your Cinematic Ad will be delivered to you via WhatsApp within 12 hours!</p>
+              <p style="margin: 0; font-weight: bold;">🚀 Your Cinematic Ad will be delivered to you via WhatsApp within 24-48 hours!</p>
             </div>
             <p>Our team is already working on your product visuals using the images you provided.</p>
             <br/>
