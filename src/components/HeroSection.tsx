@@ -34,7 +34,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen pt-32 overflow-hidden bg-black flex items-center">
+    <section className="relative pt-32 overflow-hidden bg-black flex items-center">
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-gold/10 rounded-full blur-[120px]" />
@@ -45,7 +45,7 @@ const HeroSection = () => {
         <div className="embla__container flex h-full">
           {banners.map((banner) => (
             <div key={banner.id} className="embla__slide flex-[0_0_100%] min-w-0 relative">
-              <div className="container max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center py-12 md:py-20 min-h-[80vh]">
+              <div className="container max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center py-8 md:py-12">
                 
                 {/* Left Side: Content */}
                 <motion.div
