@@ -1,6 +1,6 @@
 import ContactForm from "@/components/ContactForm";
 import { motion } from "framer-motion";
-import { Mail, MessageCircle, MapPin } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Instagram, Facebook } from "lucide-react";
 
 const ContactUs = () => {
   return (
@@ -24,7 +24,7 @@ const ContactUs = () => {
 
             <div className="grid gap-6">
               {[
-                { icon: Mail, label: "Email Us", val: "harshaicreations@gmail.com", href: "mailto:harshaicreations@gmail.com" },
+                { icon: Mail, label: "Email Us", val: "aicreationsbyharsh@gmail.com", href: "mailto:aicreationsbyharsh@gmail.com" },
                 { icon: MessageCircle, label: "WhatsApp", val: "+91 81605 87315", href: "https://wa.me/918160587315" },
                 { icon: MapPin, label: "Location", val: "Gujarat, India", href: "#" }
               ].map((item, i) => (
@@ -43,9 +43,14 @@ const ContactUs = () => {
             {/* Social Links or additional context? */}
             <div className="pt-6">
                  <p className="text-sm font-medium text-muted-foreground mb-4">Follow us for updates: </p>
-                 <div className="flex gap-4">
-                     {/* Add social stubs? */}
-                 </div>
+                  <div className="flex gap-4">
+                     <a href="https://www.instagram.com/harsh.ai.creations/" target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-secondary/50 border border-border/50 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300">
+                        <Instagram className="w-5 h-5" />
+                     </a>
+                     <a href="https://www.facebook.com/profile.php?id=61577410565855" target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-secondary/50 border border-border/50 text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300">
+                        <Facebook className="w-5 h-5" />
+                     </a>
+                  </div>
             </div>
           </motion.div>
 
