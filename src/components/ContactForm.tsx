@@ -69,18 +69,18 @@ const ContactForm = () => {
       }
 
       // 2. Submit Lead to Database
-      const { data, error } = await supabase.rpc("submit_lead_with_offer_v2", {
+      const { data, error } = await (supabase.rpc("submit_lead_with_offer_v2" as any, {
         p_name: formData.name,
         p_brand_name: formData.brandName || null,
         p_phone: formData.phone,
         p_email: formData.email,
         p_product_type: formData.productType || null,
-        p_product_images: uploadedImageUrls, // New field for images
-      });
+        p_product_images: uploadedImageUrls,
+      }) as any);
 
       // FALLBACK: If RPC wasn't updated yet, try regular insert
       if (error && error.message.includes("does not exist")) {
-        const { data: insertData, error: insertError } = await supabase.from("contact_submissions").insert({
+        const { data: insertData, error: insertError } = await (supabase.from("contact_submissions" as any) as any).insert({
           name: formData.name,
           brand_name: formData.brandName || null,
           phone: formData.phone,
@@ -105,6 +105,14 @@ const ContactForm = () => {
       });
 
       setSubmitted(true);
+      
+      // 4. Meta Pixel Lead Tracking
+      if (typeof window !== "undefined" && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead', {
+          content_name: '₹399 Cinematic Ad Offer',
+          status: data ? 'eligible' : 'standard'
+        });
+      }
     } catch (error: any) {
       console.error(error);
       toast({ title: "Something went wrong. Please try WhatsApp.", description: error.message, variant: "destructive" });

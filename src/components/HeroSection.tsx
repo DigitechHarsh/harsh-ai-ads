@@ -34,7 +34,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative pt-32 overflow-hidden bg-black flex items-center">
+    <section className="relative pt-44 md:pt-48 overflow-hidden bg-black flex items-center">
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-gold/10 rounded-full blur-[120px]" />
@@ -55,9 +55,14 @@ const HeroSection = () => {
                   className="space-y-8 text-left z-10 p-2"
                 >
                   {banner.is_offer && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                      <Sparkles className="w-3 h-3" />
-                      <span>Special Offer</span>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                        <Sparkles className="w-3 h-3" />
+                        <span>Special Offer</span>
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold uppercase tracking-widest">
+                        <span>₹399/- ONLY</span>
+                      </div>
                     </div>
                   )}
 
