@@ -8,11 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash, LogOut, Settings2, RotateCcw, Plus } from "lucide-react";
+import { Trash, LogOut, Settings2, RotateCcw, Plus, ExternalLink, Users, Zap, Layout as LayoutIcon } from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [siteStats, setSiteStats] = useState({ total_leads: 0, active_offers: 0 });
   
   const [leads, setLeads] = useState<any[]>([]);
   const [loadingLeads, setLoadingLeads] = useState(true);
@@ -73,8 +74,11 @@ export default function AdminDashboard() {
   };
 
   const fetchLeads = async () => {
-    const { data, error } = await supabase.from("contact_submissions" as any).select("*").order("created_at", { ascending: false });
-    if (!error && data) setLeads(data);
+    const { data, error } = await (supabase.from("contact_submissions" as any) as any).select("*").order("created_at", { ascending: false });
+    if (!error && data) {
+      setLeads(data);
+      setSiteStats(prev => ({ ...prev, total_leads: data.length }));
+    }
     setLoadingLeads(false);
   };
 
@@ -316,12 +320,79 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center bg-card p-4 rounded-xl border">
-          <h1 className="text-2xl font-bold font-display">Harsh AI Creations Admin</h1>
-          <Button variant="outline" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" /> Logout
-          </Button>
+      <div className="container max-w-7xl mx-auto px-6 py-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-gold-gradient">Admin Dashboard</h1>
+            <p className="text-muted-foreground text-sm">Manage your leads, offers, and library.</p>
+          </div>
+          <div className="flex items-center gap-3">
+             <Button variant="outline" size="sm" onClick={() => window.open('/', '_blank')} className="gap-2">
+                <ExternalLink className="w-4 h-4" /> View Site
+             </Button>
+             <Button variant="destructive" size="sm" onClick={handleLogout} className="gap-2">
+                <LogOut className="w-4 h-4" /> Logout
+             </Button>
+          </div>
+        </div>
+
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+           <Card className="bg-secondary/10 border-border/50">
+              <CardContent className="pt-6">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+                       <Users className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Leads</p>
+                       <h3 className="text-2xl font-bold">{siteStats.total_leads}</h3>
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
+
+           <Card className="bg-secondary/10 border-border/50">
+              <CardContent className="pt-6">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gold/10 text-gold rounded-xl">
+                       <Zap className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Active Claims</p>
+                       <h3 className="text-2xl font-bold">{offerStats?.total_claimed || 0} / {offerStats?.claim_limit || 20}</h3>
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
+
+           <Card className="bg-secondary/10 border-border/50">
+              <CardContent className="pt-6">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-500/10 text-green-500 rounded-xl">
+                       <LayoutIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Banners</p>
+                       <h3 className="text-2xl font-bold">{banners.length}</h3>
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
+
+           <Card className="bg-secondary/10 border-border/50">
+              <CardContent className="pt-6">
+                 <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-500/10 text-purple-500 rounded-xl">
+                       <Sparkles className="w-6 h-6" />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Prompts</p>
+                       <h3 className="text-2xl font-bold">{prompts.length}</h3>
+                    </div>
+                 </div>
+              </CardContent>
+           </Card>
         </div>
 
         <Tabs defaultValue="submissions" className="w-full">
