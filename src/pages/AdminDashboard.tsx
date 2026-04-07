@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash, LogOut, Settings2, RotateCcw } from "lucide-react";
+import { Trash, LogOut, Settings2, RotateCcw, Plus } from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -26,10 +26,14 @@ export default function AdminDashboard() {
   const [offerStats, setOfferStats] = useState<{ total_claimed: number; claim_limit: number } | null>(null);
   const [newLimit, setNewLimit] = useState("");
 
-  // Prompts
+  // Banners
+  const [banners, setBanners] = useState<any[]>([]);
+  const [bannerForm, setBannerForm] = useState({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image' });
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+
+  // Prompts & Campaigns
   const [prompts, setPrompts] = useState<any[]>([]);
   const [promptForm, setPromptForm] = useState({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
-
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [campaignBrand, setCampaignBrand] = useState("");
   const [campaignFile, setCampaignFile] = useState<File | null>(null);
@@ -41,6 +45,9 @@ export default function AdminDashboard() {
     
     const { data: cData, error: cError } = await supabase.from("prompt_campaigns").select("*");
     if (!cError && cData) setCampaigns(cData);
+
+    const { data: bData, error: bError } = await supabase.from("hero_banners").select("*").order("priority", { ascending: true });
+    if (!bError && bData) setBanners(bData);
   };
 
   useEffect(() => {
@@ -63,21 +70,21 @@ export default function AdminDashboard() {
   };
 
   const fetchLeads = async () => {
-    const { data, error } = await supabase.from("contact_submissions").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("contact_submissions" as any).select("*").order("created_at", { ascending: false });
     if (!error && data) setLeads(data);
     setLoadingLeads(false);
   };
 
   const fetchSamples = async () => {
-    const { data, error } = await supabase.from("samples").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("samples" as any).select("*").order("created_at", { ascending: false });
     if (!error && data) setSamples(data);
   };
 
   const fetchOfferStats = async () => {
-    const { data, error } = await supabase.from("offer_tracker").select("total_claimed, claim_limit").eq("id", 1).single();
+    const { data, error } = await supabase.from("offer_tracker" as any).select("total_claimed, claim_limit").eq("id", 1).single();
     if (!error && data) {
-      setOfferStats(data);
-      setNewLimit(String(data.claim_limit || 20));
+      setOfferStats(data as any);
+      setNewLimit(String((data as any).claim_limit || 20));
     }
   };
 
@@ -85,7 +92,7 @@ export default function AdminDashboard() {
     const limitNum = parseInt(newLimit);
     if (isNaN(limitNum) || limitNum < 1) return toast.error("Please enter a valid number");
     
-    const { error } = await supabase.from("offer_tracker").update({ claim_limit: limitNum }).eq("id", 1);
+    const { error } = await supabase.from("offer_tracker" as any).update({ claim_limit: limitNum }).eq("id", 1);
     if (!error) {
       toast.success("Offer limit updated!");
       fetchOfferStats();
@@ -98,7 +105,7 @@ export default function AdminDashboard() {
     const confirmed = window.confirm("Are you sure you want to reset the claimed count to 0? This starts a new campaign.");
     if (!confirmed) return;
 
-    const { error } = await supabase.from("offer_tracker").update({ total_claimed: 0 }).eq("id", 1);
+    const { error } = await supabase.from("offer_tracker" as any).update({ total_claimed: 0 }).eq("id", 1);
     if (!error) {
       toast.success("Offer claims reset to 0!");
       fetchOfferStats();
@@ -116,18 +123,14 @@ export default function AdminDashboard() {
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    // Upload to storage
     const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, file);
-
     if (uploadError) {
       toast.error(uploadError.message);
       setUploading(false);
       return;
     }
 
-    // Get public URL
     const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
-
     const mediaType = file.type.startsWith("video/") ? "video" : "image";
 
     const { error: dbError } = await supabase.from("samples").insert({
@@ -163,7 +166,6 @@ export default function AdminDashboard() {
     setUploading(true);
 
     let finalUrl = campaignUrl;
-
     if (campaignFile) {
       const fileExt = campaignFile.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
@@ -175,7 +177,6 @@ export default function AdminDashboard() {
         setUploading(false);
         return;
       }
-
       const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
       finalUrl = publicUrl;
     }
@@ -192,7 +193,7 @@ export default function AdminDashboard() {
       setCampaignBrand("");
       setCampaignFile(null);
       setCampaignUrl("");
-      fetchPrompts(); // re-fetch campaigns
+      fetchPrompts();
     }
     setUploading(false);
   };
@@ -207,18 +208,55 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSaveBanner = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bannerFile || !bannerForm.title) return toast.error("Title and Media file required");
+    setUploading(true);
+
+    const fileExt = bannerFile.name.split(".").pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `hero/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, bannerFile);
+    if (uploadError) {
+      toast.error(uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
+
+    const { error: dbError } = await (supabase.from("hero_banners" as any) as any).insert({
+      ...bannerForm,
+      media_url: publicUrl,
+    });
+
+    if (dbError) {
+      toast.error(dbError.message);
+    } else {
+      toast.success("Hero Banner Added!");
+      setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image' });
+      setBannerFile(null);
+      fetchPrompts();
+    }
+    setUploading(false);
+  };
+
+  const handleDeleteBanner = async (id: string) => {
+    const { error } = await supabase.from("hero_banners" as any).delete().eq("id", id);
+    if (!error) {
+      toast.success("Banner deleted");
+      fetchPrompts();
+    } else {
+      toast.error(error.message);
+    }
+  };
 
   const handleSavePrompt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!promptForm.title || !promptForm.brand) return toast.error("Title and Brand are required");
-    
-    // Ensure is_free is a boolean
-    const payload = {
-       ...promptForm,
-       is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true
-    };
-    
-    const { error } = await supabase.from("reel_prompts").insert([payload]);
+    const payload = { ...promptForm, is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true };
+    const { error } = await (supabase.from("reel_prompts" as any) as any).insert([payload]);
     if (!error) {
       toast.success("Prompt added!");
       setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
@@ -242,7 +280,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center bg-card p-4 rounded-xl border">
           <h1 className="text-2xl font-bold font-display">Harsh AI Creations Admin</h1>
           <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -250,46 +288,16 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        <Tabs defaultValue="leads" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="leads">Manage Leads</TabsTrigger>
-            <TabsTrigger value="offers">Offer Settings</TabsTrigger>
-            <TabsTrigger value="samples">Manage Samples</TabsTrigger>
-            <TabsTrigger value="prompts">Prompts Library</TabsTrigger>
+        <Tabs defaultValue="submissions" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-secondary h-auto p-1 overflow-x-auto">
+            <TabsTrigger value="submissions" className="py-2">Submissions</TabsTrigger>
+            <TabsTrigger value="hero" className="py-2">Hero Slider</TabsTrigger>
+            <TabsTrigger value="offers" className="py-2">Offers</TabsTrigger>
+            <TabsTrigger value="samples" className="py-2">Portfolio</TabsTrigger>
+            <TabsTrigger value="prompts" className="py-2">Prompts</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="offers" className="space-y-6">
-            <Card className="bg-primary/5 border-primary/20 max-w-2xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
-                <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {offerStats && (
-                  <div className="flex items-center justify-between text-sm font-medium">
-                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
-                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
-                  </div>
-                )}
-                
-                <div className="flex gap-2 items-end pt-2">
-                  <div className="space-y-1 flex-1">
-                    <label className="text-xs">Update Max Claims Allowed</label>
-                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
-                  </div>
-                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
-                </div>
 
-                <div className="pt-4 border-t border-border/50">
-                  <Button onClick={handleResetOffer} variant="destructive" className="w-full">
-                    <RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="leads" className="space-y-6">
+          <TabsContent value="submissions">
             <Card>
               <CardHeader>
                 <CardTitle>Contact Submissions</CardTitle>
@@ -347,193 +355,136 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="prompts" className="space-y-8">
-
-            {/* Campaign Covers Management */}
+          <TabsContent value="hero" className="space-y-6">
             <div className="grid md:grid-cols-3 gap-6">
-              <Card className="md:col-span-1 border-primary/20 bg-primary/5">
+              <Card className="md:col-span-1">
                 <CardHeader>
-                  <CardTitle>Campaign Covers</CardTitle>
-                  <CardDescription>Upload a cover image for a product brand.</CardDescription>
+                  <CardTitle>Add New Slide</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSaveCampaign} className="space-y-4">
-                    <Input placeholder="Brand Name (e.g. Monster Energy)" value={campaignBrand} onChange={(e) => setCampaignBrand(e.target.value)} required />
-                    
-                    <div className="space-y-2 p-3 bg-black/20 rounded-md border border-border/50">
-                      <label className="text-xs font-semibold text-muted-foreground uppercase opacity-80">Option 1: Device Upload</label>
-                      <Input type="file" accept="image/*" onChange={(e) => setCampaignFile(e.target.files?.[0] || null)} />
+                  <form onSubmit={handleSaveBanner} className="space-y-4">
+                    <Input placeholder="Banner Title" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} />
+                    <Input placeholder="Subtitle / Subtext" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} />
+                    <div className="grid grid-cols-2 gap-2">
+                       <Input placeholder="CTA Text" value={bannerForm.cta_text} onChange={e => setBannerForm({...bannerForm, cta_text: e.target.value})} />
+                       <Input placeholder="CTA Link" value={bannerForm.cta_link} onChange={e => setBannerForm({...bannerForm, cta_link: e.target.value})} />
                     </div>
-
-                    <div className="space-y-2 p-3 bg-black/20 rounded-md border border-border/50">
-                      <label className="text-xs font-semibold text-muted-foreground uppercase opacity-80">Option 2: Drive URL / Image Link</label>
-                      <Input placeholder="Or paste any URL..." value={campaignUrl} onChange={(e) => setCampaignUrl(e.target.value)} />
-                    </div>
-                    
-                    <Button type="submit" disabled={uploading} className="w-full mt-2">
-                      {uploading ? "Saving..." : "Save Cover"}
-                    </Button>
+                    <select className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm" value={bannerForm.media_type} onChange={e => setBannerForm({...bannerForm, media_type: e.target.value})}>
+                      <option value="image">Image</option>
+                      <option value="video">Video</option>
+                    </select>
+                    <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} />
+                    <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Uploading..." : "Publish Banner"}</Button>
                   </form>
                 </CardContent>
               </Card>
-
               <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Active Campaigns</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-4">
-                  {campaigns.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No campaign covers set yet.</p>
-                  ) : (
-                    campaigns.map(c => (
-                      <div key={c.brand_name} className="relative group w-32 h-32 rounded-xl overflow-hidden border border-border">
-                        <img src={c.image_url} alt={c.brand_name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity p-2 text-center text-xs font-bold leading-tight">
-                          {c.brand_name}
-                        </div>
-                        <Button 
-                          variant="destructive" size="icon" className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100"
-                          onClick={() => handleDeleteCampaign(c.brand_name)}>
-                          <Trash className="w-3 h-3" />
-                        </Button>
+                <CardHeader><CardTitle>Manage Banners</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  {banners.map(b => (
+                    <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-secondary/20 group">
+                      <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
+                        {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
                       </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Prompts Management */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="md:col-span-1 h-fit">
-                <CardHeader>
-                  <CardTitle>Add New Prompt</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSavePrompt} className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Title</label>
-                      <Input value={promptForm.title} onChange={(e) => setPromptForm({...promptForm, title: e.target.value})} placeholder="e.g. Shot 1 - Top Down" required />
+                      <div className="flex-grow">
+                        <h4 className="font-bold text-sm">{b.title}</h4>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{b.subtitle}</p>
+                        <Badge variant="outline" className="mt-1 text-[10px]">{b.media_type}</Badge>
+                      </div>
+                      <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Brand / Group</label>
-                      <Input value={promptForm.brand} onChange={(e) => setPromptForm({...promptForm, brand: e.target.value})} placeholder="e.g. Monster Energy" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Image Prompt</label>
-                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[100px]" value={promptForm.image_prompt} onChange={(e) => setPromptForm({...promptForm, image_prompt: e.target.value})} placeholder="Main prompt..." />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Negative Prompt</label>
-                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[60px]" value={promptForm.negative_prompt} onChange={(e) => setPromptForm({...promptForm, negative_prompt: e.target.value})} placeholder="Negative..." />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Video Generation Prompt (JSON/Notes)</label>
-                      <textarea className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[150px] font-mono text-xs" value={promptForm.video_prompt} onChange={(e) => setPromptForm({...promptForm, video_prompt: e.target.value})} placeholder="Video animation prompt..." />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Pricing Status</label>
-                      <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
-                         value={promptForm.is_free ? "true" : "false"} onChange={(e) => setPromptForm({...promptForm, is_free: e.target.value === "true"})}>
-                        <option value="true">Free (Public)</option>
-                        <option value="false">Paid (Premium)</option>
-                      </select>
-                    </div>
-                    <Button type="submit" className="w-full">
-                      Save Prompt
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Existing Prompts</CardTitle>
-                </CardHeader>
-                <CardContent className="max-h-[600px] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Brand</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {prompts.map((p) => (
-                        <TableRow key={p.id}>
-                          <TableCell className="font-medium text-xs">{p.brand}</TableCell>
-                          <TableCell className="text-sm">{p.title}</TableCell>
-                          <TableCell>
-                            {p.is_free ? (
-                              <Badge className="bg-green-500 hover:bg-green-600 text-[10px]">Free</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-[10px]">Paid</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => handleDeletePrompt(p.id)} className="text-red-500 h-8 px-2">
-                              <Trash className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  ))}
+                  {banners.length === 0 && <p className="text-center py-10 text-muted-foreground text-sm">No banners created yet.</p>}
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          <TabsContent value="samples">
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="md:col-span-1 h-fit">
-                <CardHeader>
-                  <CardTitle>Upload New Sample</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleUploadSample} className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Title</label>
-                      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Nike Sneakers" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Media File (Image or Video)</label>
-                      <Input type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files?.[0] || null)} required />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={uploading}>
-                      {uploading ? "Uploading..." : "Upload Portfolio Sample"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>Active Portfolio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    {samples.map((s) => (
-                      <div key={s.id} className="relative group rounded-xl overflow-hidden border bg-background">
-                        {s.media_type === "video" ? (
-                          <video src={s.media_url} className="w-full aspect-square object-cover" muted loop autoPlay playsInline disablePictureInPicture />
-                        ) : (
-                          <img src={s.media_url} alt={s.title} className="w-full aspect-square object-cover" />
-                        )}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
-                          <span className="text-white font-medium text-center mb-2">{s.title}</span>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteSample(s.id, s.media_url)}>
-                            <Trash className="w-4 h-4 mr-2" /> Delete
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+          <TabsContent value="offers" className="space-y-6">
+            <Card className="bg-primary/5 border-primary/20 max-w-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
+                <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {offerStats && (
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
+                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                )}
+                <div className="flex gap-2 items-end pt-2">
+                  <div className="space-y-1 flex-1">
+                    <label className="text-xs">Update Max Claims Allowed</label>
+                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
+                  </div>
+                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
+                </div>
+                <div className="pt-4 border-t border-border/50">
+                  <Button onClick={handleResetOffer} variant="destructive" className="w-full"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="samples" className="space-y-6">
+             <div className="grid md:grid-cols-3 gap-6">
+               <Card className="md:col-span-1 border-primary/20 bg-primary/5">
+                 <CardHeader><CardTitle>Upload Portfolio</CardTitle></CardHeader>
+                 <CardContent>
+                    <form onSubmit={handleUploadSample} className="space-y-4">
+                      <Input placeholder="Sample Title" value={title} onChange={e => setTitle(e.target.value)} />
+                      <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
+                      <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : "Upload Portfolio"}</Button>
+                    </form>
+                 </CardContent>
+               </Card>
+               <Card className="md:col-span-2">
+                  <CardHeader><CardTitle>Active Portfolio</CardTitle></CardHeader>
+                  <CardContent className="grid grid-cols-3 gap-4">
+                     {samples.map(s => (
+                        <div key={s.id} className="relative group rounded-lg overflow-hidden border">
+                           {s.media_type === 'video' ? <video src={s.media_url} className="w-full aspect-square object-cover" /> : <img src={s.media_url} className="w-full aspect-square object-cover" />}
+                           <Button variant="destructive" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                        </div>
+                     ))}
+                  </CardContent>
+               </Card>
+             </div>
+          </TabsContent>
+
+          <TabsContent value="prompts" className="space-y-8">
+             <div className="grid md:grid-cols-3 gap-6">
+                <Card className="md:col-span-1">
+                   <CardHeader><CardTitle>Prompts Library</CardTitle></CardHeader>
+                   <CardContent>
+                      <form onSubmit={handleSavePrompt} className="space-y-4">
+                         <Input placeholder="Title" value={promptForm.title} onChange={e => setPromptForm({...promptForm, title: e.target.value})} />
+                         <Input placeholder="Brand" value={promptForm.brand} onChange={e => setPromptForm({...promptForm, brand: e.target.value})} />
+                         <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Image Prompt" value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} />
+                         <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Video Prompt" value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} />
+                         <Button type="submit">Save Prompt</Button>
+                      </form>
+                   </CardContent>
+                </Card>
+                <Card className="md:col-span-2">
+                   <CardHeader><CardTitle>Existing Prompts</CardTitle></CardHeader>
+                   <CardContent>
+                      <Table>
+                         <TableHeader><TableRow><TableHead>Brand</TableHead><TableHead>Title</TableHead><TableHead></TableHead></TableRow></TableHeader>
+                         <TableBody>
+                            {prompts.map(p => (
+                               <TableRow key={p.id}>
+                                  <TableCell>{p.brand}</TableCell>
+                                  <TableCell>{p.title}</TableCell>
+                                  <TableCell><Button variant="ghost" size="icon" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4 text-red-500" /></Button></TableCell>
+                               </TableRow>
+                            ))}
+                         </TableBody>
+                      </Table>
+                   </CardContent>
+                </Card>
+             </div>
           </TabsContent>
         </Tabs>
       </div>

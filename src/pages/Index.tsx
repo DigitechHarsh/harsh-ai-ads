@@ -6,8 +6,6 @@ import OfferSection from "@/components/OfferSection";
 import ContactForm from "@/components/ContactForm";
 import TrustSection from "@/components/TrustSection";
 import FinalCTA from "@/components/FinalCTA";
-import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
 
 const Index = () => (
   <main className="min-h-screen bg-background">
@@ -19,8 +17,6 @@ const Index = () => (
     <TrustSection />
     <ContactForm />
     <FinalCTA />
-    <Footer />
-    <WhatsAppButton />
   </main>
 );
 
