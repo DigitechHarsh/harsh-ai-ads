@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,12 +12,25 @@ import PromptsLibrary from "./pages/PromptsLibrary.tsx";
 
 const queryClient = new QueryClient();
 
+const PixelTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).fbq) {
+      (window as any).fbq('track', 'PageView');
+    }
+  }, [location.pathname]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <PixelTracker />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
