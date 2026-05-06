@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_utils/dbConnect';
-import { ContactSubmission, OfferTracker } from '../_utils/models';
-import { requireAuth } from '../_utils/auth';
+import dbConnect from '../_utils/dbConnect.js';
+import { ContactSubmission, OfferTracker } from '../_utils/models.js';
+import { requireAuth } from '../_utils/auth.js';
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);

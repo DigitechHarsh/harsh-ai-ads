@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import dbConnect from '../_utils/dbConnect';
-import { HeroBanner } from '../_utils/models';
-import { requireAuth } from '../_utils/auth';
+import dbConnect from '../_utils/dbConnect.js';
+import { HeroBanner } from '../_utils/models.js';
+import { requireAuth } from '../_utils/auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   await dbConnect();
