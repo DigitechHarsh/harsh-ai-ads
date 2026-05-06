@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Sparkles } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -14,11 +14,24 @@ const HeroSection = () => {
 
   useEffect(() => {
     const fetchBanners = async () => {
-      const { data, error } = await supabase.from("hero_banners").select("*").order("priority", { ascending: true });
-      if (!error && data && data.length > 0) {
-        setBanners(data);
-      } else {
-        // Fallback banner if DB is empty
+      try {
+        const res = await fetch("/api/hero");
+        const data = await res.json();
+        if (data && data.length > 0) {
+          setBanners(data);
+        } else {
+          // Fallback banner if DB is empty
+        setBanners([{
+          id: 'default',
+          title: "Make Your Product Look PREMIUM with Cinematic Ads",
+          subtitle: "High-converting 6-12 second AI ads that turn simple products into luxury visuals",
+          cta_text: "Get Your Ad Now",
+          cta_link: "#form",
+          media_url: heroProduct,
+          media_type: "image"
+        }]);
+        }
+      } catch (e) {
         setBanners([{
           id: 'default',
           title: "Make Your Product Look PREMIUM with Cinematic Ads",
@@ -59,9 +72,6 @@ const HeroSection = () => {
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest animate-pulse">
                         <Sparkles className="w-3 h-3" />
                         <span>Special Offer</span>
-                      </div>
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold uppercase tracking-widest">
-                        <span>₹399/- ONLY</span>
                       </div>
                     </div>
                   )}

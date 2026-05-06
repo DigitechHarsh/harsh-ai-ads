@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Users } from "lucide-react";
 
@@ -8,29 +8,18 @@ const OfferCountdownBar = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const { data, error } = await supabase
-        .from("offer_tracker" as any)
-        .select("total_claimed, claim_limit")
-        .eq("id", 1)
-        .single();
-      
-      if (!error && data) {
-        setStats(data as any);
-      }
+      try {
+        const res = await fetch("/api/offers");
+        const data = await res.json();
+        setStats(data);
+      } catch (e) {}
     };
     fetchStats();
 
-    // Real-time updates
-    const channel = supabase
-      .channel("offer_changes")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "offer_tracker" }, (payload) => {
-        setStats(payload.new as any);
-      })
-      .subscribe();
+    // Polling as a simple alternative to real-time WebSockets
+    const interval = setInterval(fetchStats, 5000);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   if (!stats) return null;

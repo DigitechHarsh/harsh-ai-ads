@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle, Image as ImageIcon, X, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -46,71 +46,61 @@ const ContactForm = () => {
 
     setLoading(true);
     try {
-      // 1. Upload Images to Supabase Storage
+      // 1. Upload Images to Cloudinary
       const uploadedImageUrls: string[] = [];
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
       for (const file of selectedFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
+        if (!cloudName || !uploadPreset) {
+          throw new Error("Cloudinary credentials are not set in .env");
+        }
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
 
-        const { error: uploadError } = await supabase.storage
-          .from("product-submissions")
-          .upload(filePath, file);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: "POST",
+          body: formData,
+        });
 
-        if (uploadError) {
-          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Failed to upload ${file.name}: ${errorText}`);
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("product-submissions")
-          .getPublicUrl(filePath);
-        
-        uploadedImageUrls.push(publicUrl);
+        const data = await res.json();
+        uploadedImageUrls.push(data.secure_url);
       }
 
-      // 2. Submit Lead to Database
-      const { data, error } = await (supabase.rpc("submit_lead_with_offer_v2" as any, {
-        p_name: formData.name,
-        p_brand_name: formData.brandName || null,
-        p_phone: formData.phone,
-        p_email: formData.email,
-        p_product_type: formData.productType || null,
-        p_product_images: uploadedImageUrls,
-      }) as any);
-
-      // FALLBACK: If RPC wasn't updated yet, try regular insert
-      if (error && error.message.includes("does not exist")) {
-        const { data: insertData, error: insertError } = await (supabase.from("contact_submissions" as any) as any).insert({
+      // 2. Submit Lead to Database via Backend API
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: formData.name,
           brand_name: formData.brandName || null,
           phone: formData.phone,
           email: formData.email,
           product_type: formData.productType || null,
           product_images: uploadedImageUrls,
-        });
-        if (insertError) throw insertError;
-      } else if (error) {
-        throw new Error(error.message);
-      }
-
-      setIsEligible(data ?? true);
-
-      // 3. Trigger the welcome email via Supabase Edge Functions
-      await supabase.functions.invoke("send-email", {
-        body: {
-          email: formData.email,
-          name: formData.name,
-          isEligible: data ?? true,
-        },
+        }),
       });
 
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Submission failed");
+      }
+
+      setIsEligible(data.isEligible ?? true);
       setSubmitted(true);
       
-      // 4. Meta Pixel Lead Tracking
+      // 3. Meta Pixel Lead Tracking
       if (typeof window !== "undefined" && (window as any).fbq) {
         (window as any).fbq('track', 'Lead', {
           content_name: '₹399 Cinematic Ad Offer',
-          status: data ? 'eligible' : 'standard'
+          status: data.isEligible ? 'eligible' : 'standard'
         });
       }
     } catch (error: any) {

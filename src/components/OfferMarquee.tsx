@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Sparkles } from "lucide-react";
 
 const OfferMarquee = () => {
@@ -7,15 +7,12 @@ const OfferMarquee = () => {
 
   useEffect(() => {
     const fetchOffers = async () => {
-      const { data, error } = await supabase
-        .from("hero_banners")
-        .select("marquee_text")
-        .eq("is_offer", true)
-        .not("marquee_text", "is", null);
-
-      if (!error && data) {
-        setOffers(data);
-      }
+      try {
+        const res = await fetch("/api/hero");
+        const data = await res.json();
+        const offersOnly = data.filter((b: any) => b.is_offer && b.marquee_text);
+        setOffers(offersOnly);
+      } catch (e) {}
     };
     fetchOffers();
   }, []);

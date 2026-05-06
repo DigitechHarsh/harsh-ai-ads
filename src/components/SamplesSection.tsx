@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const SamplesSection = () => {
@@ -10,8 +10,11 @@ const SamplesSection = () => {
 
   useEffect(() => {
     const fetchSamples = async () => {
-      const { data } = await supabase.from("samples").select("*").order("created_at", { ascending: false });
-      if (data) setSamples(data);
+      try {
+        const res = await fetch("/api/portfolio");
+        const data = await res.json();
+        if (data) setSamples(data);
+      } catch (e) {}
     };
     fetchSamples();
   }, []);

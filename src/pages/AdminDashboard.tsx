@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,67 +44,96 @@ export default function AdminDashboard() {
   const [campaignUrl, setCampaignUrl] = useState("");
   const [promptFile, setPromptFile] = useState<File | null>(null);
 
-  const fetchPrompts = async () => {
-    const { data: pData, error: pError } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: false });
-    if (!pError && pData) setPrompts(pData);
-    
-    const { data: cData, error: cError } = await supabase.from("prompt_campaigns").select("*");
-    if (!cError && cData) setCampaigns(cData);
+  // Editing States
+  const [editingSampleId, setEditingSampleId] = useState<string | null>(null);
+  const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
+  const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+  const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
+  const authFetch = async (url: string, options: any = {}) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token");
+    const headers = { ...options.headers, Authorization: `Bearer ${token}` };
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  };
 
-    const { data: bData, error: bError } = await supabase.from("hero_banners").select("*").order("priority", { ascending: true });
-    if (!bError && bData) setBanners(bData);
+  const uploadToCloudinary = async (file: File) => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    if (!cloudName || !uploadPreset) throw new Error("Cloudinary credentials missing");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: "POST", body: formData });
+    if (!res.ok) throw new Error("Upload failed");
+    const data = await res.json();
+    return data.secure_url;
+  };
+
+  const fetchPrompts = async () => {
+    try {
+      setPrompts(await fetch("/api/prompts").then(r => r.json()));
+      setCampaigns(await fetch("/api/campaigns").then(r => r.json()));
+      setBanners(await fetch("/api/hero").then(r => r.json()));
+    } catch(e) {}
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/login");
-      } else {
-        setSession(session);
-        fetchLeads();
-        fetchSamples();
-        fetchOfferStats();
-        fetchPrompts();
-      }
-    });
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    } else {
+      setSession({ token });
+      fetchLeads();
+      fetchSamples();
+      fetchOfferStats();
+      fetchPrompts();
+    }
   }, [navigate]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem("token");
     navigate("/");
   };
 
   const fetchLeads = async () => {
-    const { data, error } = await (supabase.from("contact_submissions" as any) as any).select("*").order("created_at", { ascending: false });
-    if (!error && data) {
+    try {
+      const data = await authFetch("/api/leads");
       setLeads(data);
       setSiteStats(prev => ({ ...prev, total_leads: data.length }));
-    }
+    } catch(e) {}
     setLoadingLeads(false);
   };
 
   const fetchSamples = async () => {
-    const { data, error } = await supabase.from("samples" as any).select("*").order("created_at", { ascending: false });
-    if (!error && data) setSamples(data);
+    try {
+      setSamples(await fetch("/api/portfolio").then(r => r.json()));
+    } catch(e) {}
   };
 
   const fetchOfferStats = async () => {
-    const { data, error } = await supabase.from("offer_tracker" as any).select("total_claimed, claim_limit").eq("id", 1).single();
-    if (!error && data) {
-      setOfferStats(data as any);
-      setNewLimit(String((data as any).claim_limit || 20));
-    }
+    try {
+      const data = await fetch("/api/offers").then(r => r.json());
+      setOfferStats(data);
+      setNewLimit(String(data.claim_limit || 20));
+    } catch(e) {}
   };
 
   const handleUpdateLimit = async () => {
     const limitNum = parseInt(newLimit);
     if (isNaN(limitNum) || limitNum < 1) return toast.error("Please enter a valid number");
     
-    const { error } = await supabase.from("offer_tracker" as any).update({ claim_limit: limitNum }).eq("id", 1);
-    if (!error) {
+    try {
+      await authFetch("/api/offers", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ claim_limit: limitNum })
+      });
       toast.success("Offer limit updated!");
       fetchOfferStats();
-    } else {
+    } catch(e) {
       toast.error("Failed to update limit");
     }
   };
@@ -113,106 +142,129 @@ export default function AdminDashboard() {
     const confirmed = window.confirm("Are you sure you want to reset the claimed count to 0? This starts a new campaign.");
     if (!confirmed) return;
 
-    const { error } = await supabase.from("offer_tracker" as any).update({ total_claimed: 0 }).eq("id", 1);
-    if (!error) {
+    try {
+      await authFetch("/api/offers", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ total_claimed: 0 })
+      });
       toast.success("Offer claims reset to 0!");
       fetchOfferStats();
-    } else {
+    } catch(e) {
       toast.error("Failed to reset claims");
     }
   };
 
   const handleUploadSample = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title) return toast.error("Please provide a title and file");
+    if (!title) return toast.error("Please provide a title");
+    if (!file && !editingSampleId) return toast.error("Please provide a file");
 
     setUploading(true);
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    try {
+      let publicUrl = undefined;
+      let mediaType = undefined;
 
-    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, file);
-    if (uploadError) {
-      toast.error(uploadError.message);
-      setUploading(false);
-      return;
-    }
+      if (file) {
+        publicUrl = await uploadToCloudinary(file);
+        mediaType = file.type.startsWith("video/") ? "video" : "image";
+      }
 
-    const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
-    const mediaType = file.type.startsWith("video/") ? "video" : "image";
+      const payload: any = { title };
+      if (publicUrl) payload.media_url = publicUrl;
+      if (mediaType) payload.media_type = mediaType;
 
-    const { error: dbError } = await (supabase.from("samples" as any) as any).insert({
-      title,
-      media_type: mediaType,
-      media_url: publicUrl,
-    });
+      const url = editingSampleId ? `/api/portfolio?id=${editingSampleId}` : "/api/portfolio";
+      const method = editingSampleId ? "PUT" : "POST";
 
-    if (dbError) {
-      toast.error(dbError.message);
-    } else {
-      toast.success("Sample added successfully");
+      await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      toast.success(editingSampleId ? "Sample updated successfully" : "Sample added successfully");
       setTitle("");
       setFile(null);
+      setEditingSampleId(null);
       fetchSamples();
+    } catch(e: any) {
+      toast.error(e.message);
     }
     setUploading(false);
   };
 
+  const handleEditSample = (sample: any) => {
+    setEditingSampleId(sample.id);
+    setTitle(sample.title);
+    setFile(null); // Requires re-uploading file if they want to change it
+    toast.info("Editing Sample. Enter new details above.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleDeleteSample = async (id: string, url: string) => {
-    const { error } = await supabase.from("samples").delete().eq("id", id);
-    if (!error) {
+    try {
+      await authFetch(`/api/portfolio?id=${id}`, { method: "DELETE" });
       toast.success("Sample deleted");
       fetchSamples();
-    } else {
-      toast.error(error.message);
+    } catch(e: any) {
+      toast.error(e.message);
     }
   };
 
   const handleSaveCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!campaignBrand || (!campaignFile && !campaignUrl)) return toast.error("Brand and image file OR link required");
+    if (!campaignBrand) return toast.error("Brand name required");
+    if (!campaignFile && !campaignUrl && !editingCampaignId) return toast.error("Image file OR link required");
+    
     setUploading(true);
 
     let finalUrl = campaignUrl;
-    if (campaignFile) {
-      const fileExt = campaignFile.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, campaignFile);
-      if (uploadError) {
-        toast.error(uploadError.message);
-        setUploading(false);
-        return;
+    try {
+      if (campaignFile) {
+        finalUrl = await uploadToCloudinary(campaignFile);
       }
-      const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
-      finalUrl = publicUrl;
-    }
 
-    const { error: dbError } = await (supabase.from("prompt_campaigns" as any) as any).upsert({
-      brand_name: campaignBrand,
-      image_url: finalUrl,
-    });
+      const payload: any = { brand_name: campaignBrand };
+      if (finalUrl) payload.image_url = finalUrl;
 
-    if (dbError) {
-      toast.error(dbError.message);
-    } else {
-      toast.success("Campaign Image Saved!");
+      const url = editingCampaignId ? `/api/campaigns?id=${editingCampaignId}` : "/api/campaigns";
+      const method = editingCampaignId ? "PUT" : "POST";
+
+      await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      toast.success(editingCampaignId ? "Campaign Updated!" : "Campaign Image Saved!");
       setCampaignBrand("");
       setCampaignFile(null);
       setCampaignUrl("");
+      setEditingCampaignId(null);
       fetchPrompts();
+    } catch(e: any) {
+      toast.error(e.message);
     }
     setUploading(false);
   };
 
-  const handleDeleteCampaign = async (brand_name: string) => {
-    const { error } = await supabase.from("prompt_campaigns").delete().eq("brand_name", brand_name);
-    if (!error) {
+  const handleEditCampaign = (campaign: any) => {
+    setEditingCampaignId(campaign.id);
+    setCampaignBrand(campaign.brand_name);
+    setCampaignUrl(campaign.image_url);
+    setCampaignFile(null);
+    toast.info("Editing Campaign. Enter new details above.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDeleteCampaign = async (id: string) => {
+    try {
+      await authFetch(`/api/campaigns?id=${id}`, { method: "DELETE" });
       toast.success("Campaign deleted");
       fetchPrompts();
-    } else {
-      toast.error(error.message);
+    } catch(e: any) {
+      toast.error(e.message);
     }
   };
 
@@ -220,51 +272,70 @@ export default function AdminDashboard() {
     e.preventDefault();
     const currentForm = type === 'regular' ? bannerForm : { ...offerForm, is_offer: true };
     const currentFile = type === 'regular' ? bannerFile : offerFile;
+    const editingId = type === 'regular' ? editingBannerId : editingOfferId;
 
-    if (!currentFile || !currentForm.title) return toast.error("Title and Media file required");
+    if (!currentForm.title) return toast.error("Title required");
+    if (!currentFile && !editingId) return toast.error("Media file required");
+    
     setUploading(true);
 
-    const fileExt = currentFile.name.split(".").pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `hero/${fileName}`;
+    try {
+      let publicUrl = undefined;
+      if (currentFile) {
+        publicUrl = await uploadToCloudinary(currentFile);
+      }
 
-    const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, currentFile);
-    if (uploadError) {
-      toast.error(uploadError.message);
-      setUploading(false);
-      return;
-    }
+      const payload: any = { ...currentForm };
+      if (publicUrl) payload.media_url = publicUrl;
 
-    const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
+      const url = editingId ? `/api/hero?id=${editingId}` : "/api/hero";
+      const method = editingId ? "PUT" : "POST";
 
-    const { error: dbError } = await (supabase.from("hero_banners" as any) as any).insert({
-      ...currentForm,
-      media_url: publicUrl,
-    });
+      await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-    if (dbError) {
-      toast.error(dbError.message);
-    } else {
-      toast.success(type === 'regular' ? "Hero Banner Added!" : "Offer Campaign Added!");
+      toast.success(editingId ? "Updated Successfully!" : (type === 'regular' ? "Hero Banner Added!" : "Offer Campaign Added!"));
+      
       if (type === 'regular') {
         setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image', is_offer: false, marquee_text: '' });
         setBannerFile(null);
+        setEditingBannerId(null);
       } else {
         setOfferForm({ title: '', subtitle: '', cta_text: 'Claim Offer', cta_link: '#form', media_type: 'image', marquee_text: '' });
         setOfferFile(null);
+        setEditingOfferId(null);
       }
       fetchPrompts();
+    } catch(e: any) {
+      toast.error(e.message);
     }
     setUploading(false);
   };
 
+  const handleEditBanner = (banner: any, type: 'regular' | 'offer' = 'regular') => {
+    if (type === 'regular') {
+      setEditingBannerId(banner.id);
+      setBannerForm({ title: banner.title, subtitle: banner.subtitle, cta_text: banner.cta_text, cta_link: banner.cta_link, media_type: banner.media_type, is_offer: false, marquee_text: banner.marquee_text || '' });
+      setBannerFile(null);
+    } else {
+      setEditingOfferId(banner.id);
+      setOfferForm({ title: banner.title, subtitle: banner.subtitle, cta_text: banner.cta_text, cta_link: banner.cta_link, media_type: banner.media_type, marquee_text: banner.marquee_text || '' });
+      setOfferFile(null);
+    }
+    toast.info("Editing Banner. Enter new details above.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleDeleteBanner = async (id: string) => {
-    const { error } = await supabase.from("hero_banners" as any).delete().eq("id", id);
-    if (!error) {
+    try {
+      await authFetch(`/api/hero?id=${id}`, { method: "DELETE" });
       toast.success("Banner deleted");
       fetchPrompts();
-    } else {
-      toast.error(error.message);
+    } catch(e: any) {
+      toast.error(e.message);
     }
   };
 
@@ -274,46 +345,60 @@ export default function AdminDashboard() {
     setUploading(true);
 
     let finalImageUrl = promptForm.media_url;
-    if (promptFile) {
-      const fileExt = promptFile.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `prompts/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage.from("portfolio").upload(filePath, promptFile);
-      if (uploadError) {
-        toast.error(uploadError.message);
-        setUploading(false);
-        return;
+    try {
+      if (promptFile) {
+        finalImageUrl = await uploadToCloudinary(promptFile);
       }
-      const { data: { publicUrl } } = supabase.storage.from("portfolio").getPublicUrl(filePath);
-      finalImageUrl = publicUrl;
-    }
 
-    const payload = { 
-      ...promptForm, 
-      media_url: finalImageUrl,
-      is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true 
-    };
+      const payload = { 
+        ...promptForm, 
+        media_url: finalImageUrl,
+        is_free: String(promptForm.is_free) === "true" || promptForm.is_free === true 
+      };
 
-    const { error } = await (supabase.from("reel_prompts" as any) as any).insert([payload]);
-    if (!error) {
-      toast.success("Prompt added!");
+      const url = editingPromptId ? `/api/prompts?id=${editingPromptId}` : "/api/prompts";
+      const method = editingPromptId ? "PUT" : "POST";
+
+      await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      toast.success(editingPromptId ? "Prompt updated!" : "Prompt added!");
       setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
       setPromptFile(null);
+      setEditingPromptId(null);
       fetchPrompts();
-    } else {
-      toast.error(error.message);
+    } catch(e: any) {
+      toast.error(e.message);
     }
     setUploading(false);
   };
 
+  const handleEditPrompt = (prompt: any) => {
+    setEditingPromptId(prompt.id);
+    setPromptForm({ 
+      title: prompt.title, 
+      brand: prompt.brand, 
+      image_prompt: prompt.image_prompt, 
+      negative_prompt: prompt.negative_prompt || '', 
+      video_prompt: prompt.video_prompt || '', 
+      media_url: prompt.media_url, 
+      is_free: prompt.is_free 
+    });
+    setPromptFile(null);
+    toast.info("Editing Prompt. Enter new details above.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleDeletePrompt = async (id: string) => {
-    const { error } = await supabase.from("reel_prompts" as any).delete().eq("id", id);
-    if (!error) {
+    try {
+      await authFetch(`/api/prompts?id=${id}`, { method: "DELETE" });
       toast.success("Prompt deleted");
       fetchPrompts();
-    } else {
-      toast.error(error.message);
+    } catch(e: any) {
+      toast.error(e.message);
     }
   };
 
@@ -422,7 +507,7 @@ export default function AdminDashboard() {
           <TabsList className="grid w-full grid-cols-5 bg-secondary h-auto p-1 overflow-x-auto">
             <TabsTrigger value="submissions" className="py-2">Submissions</TabsTrigger>
             <TabsTrigger value="hero" className="py-2">Hero Slider</TabsTrigger>
-            <TabsTrigger value="offers" className="py-2">Offers</TabsTrigger>
+
             <TabsTrigger value="samples" className="py-2">Portfolio</TabsTrigger>
             <TabsTrigger value="prompts" className="py-2">Prompts</TabsTrigger>
           </TabsList>
@@ -497,6 +582,29 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="hero" className="space-y-6">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Scarcity Limit (Optional)</CardTitle>
+                <CardDescription>Manage how many offers can be claimed globally.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {offerStats && (
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
+                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
+                  </div>
+                )}
+                <div className="flex gap-2 items-end pt-2 max-w-sm">
+                  <div className="space-y-1 flex-1">
+                    <label className="text-xs">Max Claims Allowed</label>
+                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
+                  </div>
+                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
+                  <Button onClick={handleResetOffer} variant="destructive"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims</Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid md:grid-cols-3 gap-6">
               <Card className="md:col-span-1">
                 <CardHeader>
@@ -514,8 +622,12 @@ export default function AdminDashboard() {
                       <option value="image">Image</option>
                       <option value="video">Video</option>
                     </select>
+                    <div className="flex items-center gap-2 px-1">
+                       <input type="checkbox" id="is_offer" checked={bannerForm.is_offer} onChange={e => setBannerForm({...bannerForm, is_offer: e.target.checked})} className="w-4 h-4 rounded border-border" />
+                       <label htmlFor="is_offer" className="text-sm cursor-pointer select-none">Mark as Special Offer (Ads limit counter)</label>
+                    </div>
                     <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} />
-                    <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Uploading..." : "Publish Banner"}</Button>
+                    <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Uploading..." : (editingBannerId ? "Update Banner" : "Publish Banner")}</Button>
                   </form>
                 </CardContent>
               </Card>
@@ -533,17 +645,23 @@ export default function AdminDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {filteredBanners.filter(b => !b.is_offer).map(b => (
-                    <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-secondary/20 group">
+                  {filteredBanners.map(b => (
+                    <div key={b.id} className={`flex items-center gap-4 p-3 border rounded-lg group ${b.is_offer ? 'bg-gold/5 border-gold/20' : 'bg-secondary/20'}`}>
                       <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
                         {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-grow">
-                        <h4 className="font-bold text-sm">{b.title}</h4>
+                        <h4 className={`font-bold text-sm ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
                         <p className="text-xs text-muted-foreground line-clamp-1">{b.subtitle}</p>
-                        <Badge variant="outline" className="mt-1 text-[10px]">{b.media_type}</Badge>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-[10px]">{b.media_type}</Badge>
+                          {b.is_offer && <Badge className="bg-gold/20 text-gold text-[10px]">Special Offer</Badge>}
+                        </div>
                       </div>
-                      <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="secondary" size="icon" onClick={() => handleEditBanner(b, 'regular')}><Settings2 className="w-4 h-4" /></Button>
+                        <Button variant="destructive" size="icon" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
+                      </div>
                     </div>
                   ))}
                   {filteredBanners.filter(b => !b.is_offer).length === 0 && <p className="text-center py-10 text-muted-foreground text-sm">No banners found.</p>}
@@ -552,91 +670,7 @@ export default function AdminDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="offers" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-primary/5 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Campaign Settings</CardTitle>
-                  <CardDescription>Manage the scarcity offer limit instantly.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {offerStats && (
-                    <div className="flex items-center justify-between text-sm font-medium">
-                      <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
-                      <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
-                    </div>
-                  )}
-                  <div className="flex gap-2 items-end pt-2">
-                    <div className="space-y-1 flex-1">
-                      <label className="text-xs">Update Max Claims Allowed</label>
-                      <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
-                    </div>
-                    <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
-                  </div>
-                  <div className="pt-4 border-t border-border/50">
-                    <Button onClick={handleResetOffer} variant="destructive" className="w-full"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims (Start New Campaign)</Button>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Launch New Offer</CardTitle>
-                  <CardDescription>This will appear in the Marquee and Hero Slider.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <form onSubmit={(e) => handleSaveBanner(e, 'offer')} className="space-y-4">
-                      <Input placeholder="Offer Title" value={offerForm.title} onChange={e => setOfferForm({...offerForm, title: e.target.value})} />
-                      <Input placeholder="Offer Subtitle" value={offerForm.subtitle} onChange={e => setOfferForm({...offerForm, subtitle: e.target.value})} />
-                      <Input placeholder="Marquee Scrolling Text (Attractive)" value={offerForm.marquee_text} onChange={e => setOfferForm({...offerForm, marquee_text: e.target.value})} />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input placeholder="CTA Text" value={offerForm.cta_text} onChange={e => setOfferForm({...offerForm, cta_text: e.target.value})} />
-                        <Input placeholder="CTA Link" value={offerForm.cta_link} onChange={e => setOfferForm({...offerForm, cta_link: e.target.value})} />
-                      </div>
-                      <select className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm" value={offerForm.media_type} onChange={e => setOfferForm({...offerForm, media_type: e.target.value})}>
-                        <option value="image">Image</option>
-                        <option value="video">Video</option>
-                      </select>
-                      <Input type="file" onChange={e => setOfferFile(e.target.files?.[0] || null)} />
-                      <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Launching..." : "Launch Offer"}</Button>
-                   </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <CardTitle>Active Offer Campaigns</CardTitle>
-                <div className="relative w-48">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                   <Input 
-                    placeholder="Search offers..." 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                    className="pl-8 h-8 text-xs bg-secondary/50 border-none"
-                   />
-                </div>
-              </CardHeader>
-              <CardContent>
-                 <div className="grid md:grid-cols-2 gap-4">
-                    {filteredBanners.filter(b => b.is_offer).map(b => (
-                      <div key={b.id} className="flex items-center gap-4 p-3 border rounded-lg bg-primary/5 border-primary/20 group relative">
-                        <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
-                          {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
-                        </div>
-                        <div className="flex-grow">
-                          <h4 className="font-bold text-sm text-primary">{b.title}</h4>
-                          <p className="text-[10px] text-muted-foreground line-clamp-1 italic italic mb-1">"{b.marquee_text}"</p>
-                          <Badge variant="outline" className="text-[10px] bg-primary/10">ACTIVE OFFER</Badge>
-                        </div>
-                        <Button variant="destructive" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
-                      </div>
-                    ))}
-                    {filteredBanners.filter(b => b.is_offer).length === 0 && <p className="text-muted-foreground text-sm py-4">No matching offer campaigns.</p>}
-                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="samples" className="space-y-6">
              <div className="grid md:grid-cols-3 gap-6">
@@ -646,7 +680,7 @@ export default function AdminDashboard() {
                     <form onSubmit={handleUploadSample} className="space-y-4">
                       <Input placeholder="Sample Title" value={title} onChange={e => setTitle(e.target.value)} />
                       <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
-                      <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : "Upload Portfolio"}</Button>
+                      <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : (editingSampleId ? "Update Portfolio" : "Upload Portfolio")}</Button>
                     </form>
                  </CardContent>
                </Card>
@@ -667,7 +701,10 @@ export default function AdminDashboard() {
                      {filteredSamples.map(s => (
                         <div key={s.id} className="relative group rounded-lg overflow-hidden border">
                            {s.media_type === 'video' ? <video src={s.media_url} className="w-full aspect-square object-cover" /> : <img src={s.media_url} className="w-full aspect-square object-cover" />}
-                           <Button variant="destructive" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
+                             <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                           </div>
                         </div>
                      ))}
                      {filteredSamples.length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No samples found.</p>}
@@ -690,7 +727,7 @@ export default function AdminDashboard() {
                          </div>
                          <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Image Prompt" value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} />
                          <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Video Prompt" value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} />
-                         <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : "Save Prompt"}</Button>
+                         <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save Prompt")}</Button>
                       </form>
                    </CardContent>
                 </Card>
@@ -722,7 +759,12 @@ export default function AdminDashboard() {
                                   </TableCell>
                                   <TableCell>{p.brand}</TableCell>
                                   <TableCell>{p.title}</TableCell>
-                                  <TableCell><Button variant="ghost" size="icon" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4 text-red-500" /></Button></TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Button variant="ghost" size="icon" onClick={() => handleEditPrompt(p)}><Settings2 className="w-4 h-4 text-muted-foreground" /></Button>
+                                      <Button variant="ghost" size="icon" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4 text-red-500" /></Button>
+                                    </div>
+                                  </TableCell>
                                </TableRow>
                             ))}
                          </TableBody>

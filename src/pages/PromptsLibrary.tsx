@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Copy, CheckCircle2, Lock, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +18,17 @@ export default function PromptsLibrary() {
   }, []);
 
   const fetchData = async () => {
-    const { data: cData } = await supabase.from("prompt_campaigns").select("*");
-    if (cData) setCampaigns(cData);
+    try {
+      const [cRes, pRes] = await Promise.all([
+        fetch("/api/campaigns"),
+        fetch("/api/prompts")
+      ]);
+      const cData = await cRes.json();
+      const pData = await pRes.json();
 
-    const { data: pData } = await supabase.from("reel_prompts").select("*").order("created_at", { ascending: true });
-    if (pData) setPrompts(pData);
+      if (cData) setCampaigns(cData);
+      if (pData) setPrompts(pData);
+    } catch(e) {}
     
     setLoading(false);
   };
