@@ -99,7 +99,7 @@ const ContactForm = () => {
       // 3. Meta Pixel Lead Tracking
       if (typeof window !== "undefined" && (window as any).fbq) {
         (window as any).fbq('track', 'Lead', {
-          content_name: '₹399 Cinematic Ad Offer',
+          content_name: '₹399 AI Ad Offer',
           status: data.isEligible ? 'eligible' : 'standard'
         });
       }
@@ -253,7 +253,7 @@ const ContactForm = () => {
               disabled={loading}
               className="w-full bg-gold-gradient text-primary-foreground font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 mt-4"
             >
-              {loading ? "Uploading Images..." : <><Send className="w-5 h-5" /> Get My Cinematic Ad</>}
+              {loading ? "Uploading Images..." : <><Send className="w-5 h-5" /> Get My AI Ad</>}
             </button>
           </form>
         </motion.div>

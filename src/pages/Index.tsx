@@ -6,6 +6,7 @@ import SamplesSection from "@/components/SamplesSection";
 
 import ContactForm from "@/components/ContactForm";
 import TrustSection from "@/components/TrustSection";
+import FAQSection from "@/components/FAQSection";
 import FinalCTA from "@/components/FinalCTA";
 
 const Index = () => (
@@ -17,6 +18,7 @@ const Index = () => (
     <SamplesSection />
 
     <TrustSection />
+    <FAQSection />
     <ContactForm />
     <FinalCTA />
   </main>

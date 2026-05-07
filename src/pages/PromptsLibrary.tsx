@@ -62,7 +62,7 @@ export default function PromptsLibrary() {
             <Sparkles className="w-4 h-4 mr-2 text-primary" /> The Secret Sauce
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold font-display uppercase tracking-wider mb-4">
-            {selectedCampaign ? selectedCampaign.brand_name : "Cinematic AI Prompts"}
+            {selectedCampaign ? selectedCampaign.brand_name : "AI Prompts"}
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             {selectedCampaign ? `Exclusive prompts used for the ${selectedCampaign.brand_name} campaign.` : "Select a campaign to explore the exact prompts used to generate our high-end, premium commercials."}
@@ -173,7 +173,7 @@ export default function PromptsLibrary() {
                     <div className="h-[280px] bg-black/40 rounded-xl border border-white/5 flex flex-col items-center justify-center p-6 text-center">
                       <Lock className="w-12 h-12 text-muted-foreground/30 mb-4" />
                       <h3 className="font-bold mb-2">Premium Prompt</h3>
-                      <p className="text-sm text-muted-foreground">Unlock this cinematic prompt to see the exact lighting, lensing, and rendering settings used for this shot.</p>
+                      <p className="text-sm text-muted-foreground">Unlock this AI prompt to see the exact lighting, lensing, and rendering settings used for this shot.</p>
                       <Button className="mt-6 w-full max-w-[200px]" variant="outline">Unlock Access</Button>
                     </div>
                   )}

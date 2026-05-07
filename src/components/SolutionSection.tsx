@@ -14,7 +14,7 @@ const SolutionSection = () => (
           The <span className="text-gold-gradient">Solution</span>
         </h2>
         <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-          We create high-end cinematic ads using AI that make your product look{" "}
+          We create high-end AI ads that make your product look{" "}
           <span className="text-foreground font-semibold">premium</span> and{" "}
           <span className="text-foreground font-semibold">increase conversions</span>.
         </p>

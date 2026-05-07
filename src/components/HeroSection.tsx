@@ -23,7 +23,7 @@ const HeroSection = () => {
           // Fallback banner if DB is empty
         setBanners([{
           id: 'default',
-          title: "Make Your Product Look PREMIUM with Cinematic Ads",
+          title: "Make Your Product Look PREMIUM with AI Ads",
           subtitle: "High-converting 6-12 second AI ads that turn simple products into luxury visuals",
           cta_text: "Get Your Ad Now",
           cta_link: "#form",
@@ -34,7 +34,7 @@ const HeroSection = () => {
       } catch (e) {
         setBanners([{
           id: 'default',
-          title: "Make Your Product Look PREMIUM with Cinematic Ads",
+          title: "Make Your Product Look PREMIUM with AI Ads",
           subtitle: "High-converting 6-12 second AI ads that turn simple products into luxury visuals",
           cta_text: "Get Your Ad Now",
           cta_link: "#form",
@@ -78,7 +78,7 @@ const HeroSection = () => {
 
                   <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-[1.1] tracking-tight">
                     {banner.title.split(' ').map((word: string, i: number) => (
-                       word.toLowerCase() === 'premium' || word.toLowerCase() === 'cinematic' || word.toLowerCase() === 'visuals' ? 
+                       word.toLowerCase() === 'premium' || word.toLowerCase() === 'ai' || word.toLowerCase() === 'visuals' ? 
                        <span key={i} className="text-gold-gradient block sm:inline">{word} </span> : 
                        <span key={i}>{word} </span>
                     ))}

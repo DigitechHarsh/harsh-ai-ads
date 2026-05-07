@@ -9,7 +9,7 @@ const WhatsAppButton = () => {
 
   return (
     <a
-      href="https://wa.me/918160587315?text=Hi%2C%20I%20want%20a%20cinematic%20ad%20for%20my%20product"
+      href="https://wa.me/918160587315?text=Hi%2C%20I%20want%20an%20AI%20ad%20for%20my%20product"
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}

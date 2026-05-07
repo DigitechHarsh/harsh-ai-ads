@@ -14,7 +14,7 @@ const AboutUs = () => {
             Crafting <span className="text-gold-gradient">Visual Excellence</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Harsh AI Creations is a premier cinematic agency dedicated to transforming ordinary products into high-end luxury visuals using cutting-edge AI technology.
+            Harsh AI Creations is a premier AI agency dedicated to transforming ordinary products into high-end luxury visuals using cutting-edge AI technology.
           </p>
         </motion.div>
 
@@ -30,7 +30,7 @@ const AboutUs = () => {
               In a world where attention is the most valuable currency, we help brands stand out. Our mission is to democratize high-end production quality, making "million-dollar visuals" accessible to every ambitious brand owner.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              We combine the precision of AI with the soul of cinematic storytelling to create ads that don't just show a product—they evoke a feeling of luxury and desire.
+              We combine the precision of AI with creative storytelling to create ads that don't just show a product—they evoke a feeling of luxury and desire.
             </p>
           </motion.div>
           <motion.div

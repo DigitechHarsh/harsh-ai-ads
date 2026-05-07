@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Film, IndianRupee, Rocket } from "lucide-react";
 
 const items = [
-  { icon: Film, title: "High-Quality Cinematic Ads", desc: "Professional-grade visuals powered by AI" },
+  { icon: Film, title: "High-Quality AI Ads", desc: "Professional-grade visuals powered by AI" },
   { icon: IndianRupee, title: "Affordable Pricing", desc: "Premium quality at budget-friendly rates" },
   { icon: Rocket, title: "Fast Delivery", desc: "Get your ad within 24-48 hours" },
 ];

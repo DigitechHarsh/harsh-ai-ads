@@ -11,13 +11,13 @@ const steps = [
   {
     icon: Sparkles,
     title: "AI Magic",
-    description: "Our experts use premium AI models and cinematic editing to transform your visuals.",
+    description: "Our experts use premium AI models and advanced editing to transform your visuals.",
     color: "from-gold/20 to-yellow-600/20",
   },
   {
     icon: Send,
     title: "Fast Delivery",
-    description: "Get your high-converting cinematic ad delivered via WhatsApp within 24-48 hours.",
+    description: "Get your high-converting AI ad delivered via WhatsApp within 24-48 hours.",
     color: "from-green-500/20 to-emerald-600/20",
   },
 ];

@@ -52,9 +52,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Send email via Resend
       if (process.env.RESEND_API_KEY) {
         await resend.emails.send({
-          from: 'Cinematic Ads <onboarding@resend.dev>', // Update to verified domain in production
+          from: 'AI Ads <onboarding@resend.dev>', // Update to verified domain in production
           to: email,
-          subject: 'Welcome to Cinematic AI Ads',
+          subject: 'Welcome to AI Ads',
           html: `<p>Hi ${name},</p><p>Thanks for your submission! You are ${is_offer_eligible ? '' : 'not '}eligible for the offer.</p>`,
         });
       }
