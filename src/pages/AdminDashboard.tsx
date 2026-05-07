@@ -697,17 +697,39 @@ export default function AdminDashboard() {
                        />
                     </div>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-3 gap-4">
-                     {filteredSamples.map(s => (
-                        <div key={s.id} className="relative group rounded-lg overflow-hidden border">
-                           {s.media_type === 'video' ? <video src={s.media_url} className="w-full aspect-square object-cover" /> : <img src={s.media_url} className="w-full aspect-square object-cover" />}
-                           <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
-                             <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                  <CardContent>
+                    <Tabs defaultValue="videos" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 mb-4 bg-secondary">
+                        <TabsTrigger value="videos">AI Videos</TabsTrigger>
+                        <TabsTrigger value="images">AI Images</TabsTrigger>
+                      </TabsList>
+
+                      <TabsContent value="videos" className="grid grid-cols-3 gap-4">
+                        {filteredSamples.filter(s => s.media_type === "video").map(s => (
+                           <div key={s.id} className="relative group rounded-lg overflow-hidden border">
+                              <video src={s.media_url} className="w-full aspect-square object-cover" />
+                              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
+                                <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                              </div>
                            </div>
-                        </div>
-                     ))}
-                     {filteredSamples.length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No samples found.</p>}
+                        ))}
+                        {filteredSamples.filter(s => s.media_type === "video").length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No AI Videos found.</p>}
+                      </TabsContent>
+
+                      <TabsContent value="images" className="grid grid-cols-3 gap-4">
+                        {filteredSamples.filter(s => s.media_type === "image").map(s => (
+                           <div key={s.id} className="relative group rounded-lg overflow-hidden border">
+                              <img src={s.media_url} className="w-full aspect-square object-cover" />
+                              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
+                                <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
+                              </div>
+                           </div>
+                        ))}
+                        {filteredSamples.filter(s => s.media_type === "image").length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No AI Images found.</p>}
+                      </TabsContent>
+                    </Tabs>
                   </CardContent>
                </Card>
              </div>
