@@ -8,7 +8,7 @@ const items = [
 ];
 
 const TrustSection = () => (
-  <section className="py-20 px-4">
+  <section className="py-10 md:py-16 px-4">
     <div className="container max-w-4xl">
       <div className="grid md:grid-cols-3 gap-6">
         {items.map((item, i) => (

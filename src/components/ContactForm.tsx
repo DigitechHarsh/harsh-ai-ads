@@ -116,7 +116,7 @@ const ContactForm = () => {
 
   if (submitted) {
     return (
-      <section id="form" className="py-20 px-4">
+      <section id="form" className="py-12 md:py-16 px-4">
         <div className="container max-w-xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -142,7 +142,7 @@ const ContactForm = () => {
   }
 
   return (
-    <section id="form" className="py-20 px-4">
+    <section id="form" className="py-12 md:py-16 px-4">
       <div className="container max-w-xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

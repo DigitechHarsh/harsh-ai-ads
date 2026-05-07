@@ -20,7 +20,7 @@ const SamplesSection = () => {
   }, []);
 
   return (
-    <section id="samples" className="py-20 px-4">
+    <section id="samples" className="py-10 md:py-16 px-4">
       <div className="container">
         <motion.h2
           className="text-2xl md:text-4xl font-display font-bold text-center mb-4"
@@ -30,7 +30,7 @@ const SamplesSection = () => {
         >
           Our <span className="text-gold-gradient">Portfolio</span>
         </motion.h2>
-        <p className="text-muted-foreground text-center mb-12">
+        <p className="text-muted-foreground text-center mb-8">
           See how we transform ordinary products into premium visuals
         </p>
 

@@ -23,9 +23,9 @@ const steps = [
 ];
 
 const ProcessSection = () => (
-  <section className="py-24 px-6 relative overflow-hidden bg-secondary/20">
+  <section className="py-12 md:py-16 px-6 relative overflow-hidden bg-secondary/20">
     <div className="container max-w-7xl mx-auto relative z-10">
-      <div className="text-center max-w-3xl mx-auto mb-16">
+      <div className="text-center max-w-3xl mx-auto mb-10">
         <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 italic">
           How It <span className="text-gold-gradient">Works</span>
         </h2>
@@ -35,7 +35,7 @@ const ProcessSection = () => (
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 md:gap-12 relative">
+      <div className="grid md:grid-cols-3 gap-6 md:gap-8 relative">
         {/* Connector lines for desktop */}
         <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2 z-0" />
         

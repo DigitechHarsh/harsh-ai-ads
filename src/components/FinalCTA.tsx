@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const FinalCTA = () => (
-  <section className="py-20 px-4">
+  <section className="py-12 md:py-16 px-4">
     <div className="container max-w-2xl text-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}

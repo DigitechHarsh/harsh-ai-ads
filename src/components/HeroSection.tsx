@@ -58,7 +58,7 @@ const HeroSection = () => {
         <div className="embla__container flex h-full">
           {banners.map((banner) => (
             <div key={banner.id} className="embla__slide flex-[0_0_100%] min-w-0 relative">
-              <div className="container max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center py-8 md:py-12">
+              <div className="container max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center py-4 md:py-8">
                 
                 {/* Left Side: Content */}
                 <motion.div

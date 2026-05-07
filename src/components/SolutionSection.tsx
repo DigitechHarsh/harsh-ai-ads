@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 const SolutionSection = () => (
-  <section className="py-20 px-4">
+  <section className="py-10 md:py-16 px-4">
     <div className="container max-w-3xl text-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}

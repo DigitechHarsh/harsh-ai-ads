@@ -8,10 +8,10 @@ const problems = [
 ];
 
 const ProblemSection = () => (
-  <section className="py-20 px-4">
+  <section className="py-10 md:py-16 px-4">
     <div className="container max-w-4xl">
       <motion.h2
-        className="text-2xl md:text-4xl font-display font-bold text-center mb-12"
+        className="text-2xl md:text-4xl font-display font-bold text-center mb-8"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
