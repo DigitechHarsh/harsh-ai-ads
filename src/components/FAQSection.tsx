@@ -43,7 +43,7 @@ const faqs = [
 
 const FAQSection = () => {
   return (
-    <section className="py-12 md:py-16 px-4 bg-secondary/10">
+    <section id="faq" className="py-12 md:py-16 px-4 bg-secondary/10">
       <div className="container max-w-3xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

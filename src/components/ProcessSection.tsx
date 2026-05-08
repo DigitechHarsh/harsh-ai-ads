@@ -23,7 +23,7 @@ const steps = [
 ];
 
 const ProcessSection = () => (
-  <section className="py-12 md:py-16 px-6 relative overflow-hidden bg-secondary/20">
+  <section id="process" className="py-12 md:py-16 px-6 relative overflow-hidden bg-secondary/20">
     <div className="container max-w-7xl mx-auto relative z-10">
       <div className="text-center max-w-3xl mx-auto mb-10">
         <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 italic">

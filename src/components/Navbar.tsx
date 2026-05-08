@@ -17,10 +17,9 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Prompts", path: "/prompts" },
-    { name: "Portfolio", path: "/portfolio" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact Us", path: "/contact" },
+    { name: "Portfolio", path: "/#samples" },
+    { name: "Process", path: "/#process" },
+    { name: "FAQs", path: "/#faq" },
   ];
 
   return (
@@ -41,17 +40,34 @@ const Navbar = () => {
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link
+            <a
               key={link.name}
-              to={link.path}
+              href={link.path}
+              onClick={(e) => {
+                if (link.path.startsWith('/#') && location.pathname === '/') {
+                  e.preventDefault();
+                  const targetId = link.path.substring(2);
+                  document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               className={`text-sm font-medium uppercase tracking-widest hover:text-primary transition-colors ${
-                location.pathname === link.path ? "text-primary" : "text-muted-foreground"
+                (location.pathname === '/' && link.path === '/') || (location.pathname === '/' && link.path.startsWith('/#'))
+                  ? "text-muted-foreground hover:text-primary" 
+                  : location.pathname === link.path ? "text-primary" : "text-muted-foreground"
               }`}
             >
               {link.name}
-            </Link>
+            </a>
           ))}
-          <Link to="/contact">
+          <a 
+            href="/#form"
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                document.getElementById('form')?.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -59,7 +75,7 @@ const Navbar = () => {
             >
               Get Started
             </motion.button>
-          </Link>
+          </a>
         </div>
 
         {/* Mobile Toggle */}
@@ -79,17 +95,37 @@ const Navbar = () => {
           >
             <div className="flex flex-col p-6 gap-4">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.name}
-                  to={link.path}
-                  onClick={() => setIsOpen(false)}
-                  className={`text-lg font-bold uppercase tracking-widest ${
-                    location.pathname === link.path ? "text-primary" : "text-muted-foreground"
-                  }`}
+                  href={link.path}
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    if (link.path.startsWith('/#') && location.pathname === '/') {
+                      e.preventDefault();
+                      const targetId = link.path.substring(2);
+                      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="text-lg font-bold uppercase tracking-widest text-muted-foreground hover:text-primary"
                 >
                   {link.name}
-                </Link>
+                </a>
               ))}
+              <a 
+                href="/#form"
+                onClick={(e) => {
+                  setIsOpen(false);
+                  if (location.pathname === '/') {
+                    e.preventDefault();
+                    document.getElementById('form')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="mt-4"
+              >
+                <button className="w-full bg-gold-gradient text-primary-foreground text-sm font-bold px-6 py-3 rounded-full uppercase tracking-widest">
+                  Get Started
+                </button>
+              </a>
             </div>
           </motion.div>
         )}
