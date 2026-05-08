@@ -14,35 +14,42 @@ import TestimonialsSection from "@/components/TestimonialsSection";
 const Index = () => {
   const navigate = useNavigate();
   useEffect(() => {
-    const sections = document.querySelectorAll("section[id], div[id='form'], div[id='home']");
-    const options = {
-      root: null,
-      rootMargin: "-45% 0px -45% 0px",
-      threshold: 0
-    };
+    // Delay observer start to let initial hash-based navigation settle
+    const timer = setTimeout(() => {
+      const sections = document.querySelectorAll("section[id], div[id='form'], div[id='home']");
+      const options = {
+        root: null,
+        rootMargin: "-45% 0px -45% 0px",
+        threshold: 0
+      };
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute("id");
-          if (id) {
-            // If we are in the samples section, only update hash if not already on a sub-tab
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute("id");
             const currentHash = window.location.hash;
+            
+            // Critical: Don't override sub-tabs in samples section
             if (id === "samples" && (currentHash === "#aiimages" || currentHash === "#aivideos")) {
               return;
             }
-            navigate(`/#${id}`, { replace: true });
+
+            if (id && `#${id}` !== currentHash) {
+              navigate(`/#${id}`, { replace: true });
+            }
           }
-        }
-      });
-    }, options);
+        });
+      }, options);
 
-    sections.forEach((section) => observer.observe(section));
+      sections.forEach((section) => observer.observe(section));
 
-    return () => {
-      sections.forEach((section) => observer.unobserve(section));
-    };
-  }, []);
+      return () => {
+        sections.forEach((section) => observer.unobserve(section));
+      };
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <main className="min-h-screen bg-background relative">
