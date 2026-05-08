@@ -503,7 +503,8 @@ export default function AdminDashboard() {
            </Card>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-8">
+        <Tabs defaultValue="submissions" className="w-full">
+          <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
           <aside className="w-full md:w-64 flex-shrink-0">
             <TabsList className="flex flex-col w-full bg-secondary/30 h-auto p-2 gap-1 border border-border/50 rounded-2xl">
@@ -979,6 +980,7 @@ export default function AdminDashboard() {
             </TabsContent>
           </main>
         </div>
+        </Tabs>
 
       </div>
     </div>
