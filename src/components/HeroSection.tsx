@@ -9,6 +9,7 @@ import logo from "@/assets/logo.png";
 import heroProduct from "@/assets/hero-product.jpg";
 import ScrollingMarquee from "./ScrollingMarquee";
 import ParticleBackground from "./ParticleBackground";
+import OfferCounter from "./OfferCounter";
 
 const HeroSection = () => {
   const [banners, setBanners] = useState<any[]>([]);
@@ -49,9 +50,12 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative pt-24 md:pt-32 overflow-hidden bg-black">
+    <section className="relative pt-[72px] md:pt-[80px] overflow-hidden bg-black">
       <ParticleBackground />
-      <ScrollingMarquee items={banners[0]?.marquee_text} />
+      <div className="relative z-[45]">
+        <ScrollingMarquee items={banners[0]?.marquee_text} />
+        <OfferCounter />
+      </div>
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-gold/10 rounded-full blur-[120px]" />

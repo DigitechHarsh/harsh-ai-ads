@@ -503,305 +503,483 @@ export default function AdminDashboard() {
            </Card>
         </div>
 
-        <Tabs defaultValue="submissions" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-secondary h-auto p-1 overflow-x-auto">
-            <TabsTrigger value="submissions" className="py-2">Submissions</TabsTrigger>
-            <TabsTrigger value="hero" className="py-2">Hero Slider</TabsTrigger>
-
-            <TabsTrigger value="samples" className="py-2">Portfolio</TabsTrigger>
-            <TabsTrigger value="prompts" className="py-2">Prompts</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="submissions">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
-                <div>
-                  <CardTitle>Contact Submissions</CardTitle>
-                  <CardDescription>View all leads and their offer eligibility status.</CardDescription>
-                </div>
-                <div className="relative w-64">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                   <Input 
-                    placeholder="Search leads..." 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                    className="pl-9 bg-secondary/50 border-none"
-                   />
-                </div>
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <aside className="w-full md:w-64 flex-shrink-0">
+            <TabsList className="flex flex-col w-full bg-secondary/30 h-auto p-2 gap-1 border border-border/50 rounded-2xl">
+              <TabsTrigger 
+                value="submissions" 
+                className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all"
+              >
+                <Users className="w-4 h-4" /> Submissions
+              </TabsTrigger>
+              <TabsTrigger 
+                value="hero" 
+                className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all"
+              >
+                <Zap className="w-4 h-4" /> Offers & Banners
+              </TabsTrigger>
+              <TabsTrigger 
+                value="samples" 
+                className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all"
+              >
+                <LayoutIcon className="w-4 h-4" /> Portfolio
+              </TabsTrigger>
+              <TabsTrigger 
+                value="prompts" 
+                className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all"
+              >
+                <Sparkles className="w-4 h-4" /> Prompts
+              </TabsTrigger>
+            </TabsList>
+            
+            <Card className="mt-8 bg-gold/5 border-gold/10 hidden md:block">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-gold" /> Quick Actions
+                </CardTitle>
               </CardHeader>
-              <CardContent className="max-h-[600px] overflow-y-auto">
-                {loadingLeads ? (
-                  <p>Loading leads...</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Client & Product</TableHead>
-                        <TableHead>Product Images</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLeads.map((lead) => (
-                        <TableRow key={lead.id}>
-                          <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell className="font-medium">
-                            <div className="text-sm">{lead.name}</div>
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{lead.brand_name}</div>
-                            <div className="text-xs text-primary font-mono mt-1">{lead.phone}</div>
-                            <div className="text-[11px] bg-secondary px-2 py-0.5 rounded inline-block mt-1">{lead.product_type}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1 overflow-x-auto max-w-[200px] pb-1">
-                              {lead.product_images && Array.isArray(lead.product_images) && lead.product_images.length > 0 ? (
-                                (lead.product_images as string[]).map((img, idx) => (
-                                  <a key={idx} href={img} target="_blank" rel="noreferrer" className="flex-shrink-0">
-                                    <img src={img} alt="Product" className="w-10 h-10 rounded object-cover border border-border hover:border-primary transition-colors" />
-                                  </a>
-                                ))
-                              ) : (
-                                <span className="text-[10px] text-muted-foreground italic">No images</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {lead.is_offer_eligible ? (
-                              <Badge className="bg-green-500 hover:bg-green-600 text-[10px] h-5">₹399 Offer</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-[10px] h-5">Standard</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
+              <CardContent className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full justify-start text-[10px]" onClick={handleResetOffer}>
+                  <RotateCcw className="w-3 h-3 mr-2" /> Reset Claims
+                </Button>
               </CardContent>
             </Card>
-          </TabsContent>
+          </aside>
 
-          <TabsContent value="hero" className="space-y-6">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Settings2 className="w-5 h-5 text-primary" /> Offer Scarcity Limit (Optional)</CardTitle>
-                <CardDescription>Manage how many offers can be claimed globally.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {offerStats && (
-                  <div className="flex items-center justify-between text-sm font-medium">
-                    <span>Total Offers Claimed: <span className="text-primary text-xl ml-2">{offerStats.total_claimed}</span></span>
-                    <span>Offer Limit: <span className="text-xl ml-2">{offerStats.claim_limit}</span></span>
+          {/* Main Content Area */}
+          <main className="flex-grow min-w-0">
+            <TabsContent value="submissions" className="mt-0">
+              <Card className="border-border/50 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+                  <div>
+                    <CardTitle className="text-2xl font-display font-bold">Contact Submissions</CardTitle>
+                    <CardDescription>View all leads and their offer eligibility status.</CardDescription>
                   </div>
-                )}
-                <div className="flex gap-2 items-end pt-2 max-w-sm">
-                  <div className="space-y-1 flex-1">
-                    <label className="text-xs">Max Claims Allowed</label>
-                    <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} />
-                  </div>
-                  <Button onClick={handleUpdateLimit} variant="secondary">Update Limit</Button>
-                  <Button onClick={handleResetOffer} variant="destructive"><RotateCcw className="w-4 h-4 mr-2" /> Reset Claims</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <Card className="md:col-span-1">
-                <CardHeader>
-                  <CardTitle>Add New Slide</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSaveBanner} className="space-y-4">
-                    <Input placeholder="Banner Title" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} />
-                    <Input placeholder="Subtitle / Subtext" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} />
-                    <div className="grid grid-cols-2 gap-2">
-                       <Input placeholder="CTA Text" value={bannerForm.cta_text} onChange={e => setBannerForm({...bannerForm, cta_text: e.target.value})} />
-                       <Input placeholder="CTA Link" value={bannerForm.cta_link} onChange={e => setBannerForm({...bannerForm, cta_link: e.target.value})} />
-                    </div>
-                    <select className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm" value={bannerForm.media_type} onChange={e => setBannerForm({...bannerForm, media_type: e.target.value})}>
-                      <option value="image">Image</option>
-                      <option value="video">Video</option>
-                    </select>
-                    <div className="flex items-center gap-2 px-1">
-                       <input type="checkbox" id="is_offer" checked={bannerForm.is_offer} onChange={e => setBannerForm({...bannerForm, is_offer: e.target.checked})} className="w-4 h-4 rounded border-border" />
-                       <label htmlFor="is_offer" className="text-sm cursor-pointer select-none">Mark as Special Offer (Ads limit counter)</label>
-                    </div>
-                    <textarea 
-                      placeholder="Marquee Text (Use • to separate items)" 
-                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm min-h-[80px]" 
-                      value={bannerForm.marquee_text} 
-                      onChange={e => setBannerForm({...bannerForm, marquee_text: e.target.value})} 
-                    />
-                    <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} />
-                    <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Uploading..." : (editingBannerId ? "Update Banner" : "Publish Banner")}</Button>
-                  </form>
-                </CardContent>
-              </Card>
-              <Card className="md:col-span-2">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle>Manage Banners</CardTitle>
-                  <div className="relative w-48">
-                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                  <div className="relative w-64">
+                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                      <Input 
-                      placeholder="Search banners..." 
+                      placeholder="Search leads..." 
                       value={searchTerm} 
                       onChange={(e) => setSearchTerm(e.target.value)} 
-                      className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                      className="pl-9 bg-secondary/50 border-none"
                      />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {filteredBanners.map(b => (
-                    <div key={b.id} className={`flex items-center gap-4 p-3 border rounded-lg group ${b.is_offer ? 'bg-gold/5 border-gold/20' : 'bg-secondary/20'}`}>
-                      <div className="w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-black">
-                        {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
-                      </div>
-                      <div className="flex-grow">
-                        <h4 className={`font-bold text-sm ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{b.subtitle}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-[10px]">{b.media_type}</Badge>
-                          {b.is_offer && <Badge className="bg-gold/20 text-gold text-[10px]">Special Offer</Badge>}
-                        </div>
-                      </div>
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="secondary" size="icon" onClick={() => handleEditBanner(b, 'regular')}><Settings2 className="w-4 h-4" /></Button>
-                        <Button variant="destructive" size="icon" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
-                      </div>
+                <CardContent className="max-h-[700px] overflow-y-auto">
+                  {loadingLeads ? (
+                    <div className="text-center py-20">
+                       <RotateCcw className="w-8 h-8 animate-spin mx-auto text-muted-foreground mb-4" />
+                       <p className="text-muted-foreground">Loading leads...</p>
                     </div>
-                  ))}
-                  {filteredBanners.filter(b => !b.is_offer).length === 0 && <p className="text-center py-10 text-muted-foreground text-sm">No banners found.</p>}
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Client & Product</TableHead>
+                          <TableHead>Product Images</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredLeads.map((lead) => (
+                          <TableRow key={lead.id} className="hover:bg-secondary/20 transition-colors">
+                            <TableCell className="text-xs">{new Date(lead.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="font-medium">
+                              <div className="text-sm font-bold">{lead.name}</div>
+                              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{lead.brand_name}</div>
+                              <div className="text-xs text-gold font-mono mt-1">{lead.phone}</div>
+                              <div className="text-[11px] bg-secondary px-2 py-0.5 rounded inline-block mt-1">{lead.product_type}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-1 overflow-x-auto max-w-[200px] pb-1">
+                                {lead.product_images && Array.isArray(lead.product_images) && lead.product_images.length > 0 ? (
+                                  (lead.product_images as string[]).map((img, idx) => (
+                                    <a key={idx} href={img} target="_blank" rel="noreferrer" className="flex-shrink-0 group">
+                                      <img src={img} alt="Product" className="w-12 h-12 rounded-lg object-cover border border-border group-hover:border-gold transition-all" />
+                                    </a>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground italic">No images</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {lead.is_offer_eligible ? (
+                                <Badge className="bg-gold/20 text-gold hover:bg-gold/30 border-gold/30 text-[10px] h-5">₹399 Offer</Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-[10px] h-5">Standard</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
+            <TabsContent value="hero" className="mt-0 space-y-6">
+              <Card className="bg-primary/5 border-primary/20 overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                   <Zap className="w-24 h-24" />
+                </div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-2xl font-display font-bold">
+                    <Settings2 className="w-6 h-6 text-gold" /> Offer Scarcity Control
+                  </CardTitle>
+                  <CardDescription>Manage how many ₹399 offers can be claimed globally.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {offerStats && (
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-background/50 p-4 rounded-xl border border-border/50">
+                         <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Claimed</p>
+                         <h4 className="text-3xl font-bold text-gold">{offerStats.total_claimed}</h4>
+                      </div>
+                      <div className="bg-background/50 p-4 rounded-xl border border-border/50">
+                         <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Max Limit</p>
+                         <h4 className="text-3xl font-bold">{offerStats.claim_limit}</h4>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-2 items-end pt-2">
+                    <div className="space-y-1 w-full sm:w-48">
+                      <label className="text-xs font-bold text-muted-foreground uppercase">Set New Limit</label>
+                      <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} className="bg-background" />
+                    </div>
+                    <Button onClick={handleUpdateLimit} className="w-full sm:w-auto">Update Offer Limit</Button>
+                    <Button onClick={handleResetOffer} variant="destructive" className="w-full sm:w-auto">
+                      <RotateCcw className="w-4 h-4 mr-2" /> Reset All Claims
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-
-          <TabsContent value="samples" className="space-y-6">
-             <div className="grid md:grid-cols-3 gap-6">
-               <Card className="md:col-span-1 border-primary/20 bg-primary/5">
-                 <CardHeader><CardTitle>Upload Portfolio</CardTitle></CardHeader>
-                 <CardContent>
-                    <form onSubmit={handleUploadSample} className="space-y-4">
-                      <Input placeholder="Sample Title" value={title} onChange={e => setTitle(e.target.value)} />
-                      <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
-                      <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : (editingSampleId ? "Update Portfolio" : "Upload Portfolio")}</Button>
-                    </form>
-                 </CardContent>
-               </Card>
-               <Card className="md:col-span-2">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                    <CardTitle>Active Portfolio</CardTitle>
+              <div className="grid grid-cols-1 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Manage Offers & Banners</CardTitle>
+                      <CardDescription>Banners shown in the hero slider and marquee text.</CardDescription>
+                    </div>
                     <div className="relative w-48">
                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                        <Input 
-                        placeholder="Search portfolio..." 
+                        placeholder="Search banners..." 
                         value={searchTerm} 
                         onChange={(e) => setSearchTerm(e.target.value)} 
                         className="pl-8 h-8 text-xs bg-secondary/50 border-none"
                        />
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="videos" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 mb-4 bg-secondary">
-                        <TabsTrigger value="videos">AI Videos</TabsTrigger>
-                        <TabsTrigger value="images">AI Images</TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="videos" className="grid grid-cols-3 gap-4">
-                        {filteredSamples.filter(s => s.media_type === "video").map(s => (
-                           <div key={s.id} className="relative group rounded-lg overflow-hidden border">
-                              <video src={s.media_url} className="w-full aspect-square object-cover" />
-                              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
-                                <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
-                              </div>
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Add Form */}
+                    <div className="space-y-4 bg-secondary/20 p-6 rounded-2xl border border-border/50">
+                      <h4 className="font-bold text-sm uppercase tracking-widest text-muted-foreground mb-4">
+                        {editingBannerId ? "Edit Banner" : "Add New Banner"}
+                      </h4>
+                      <form onSubmit={handleSaveBanner} className="space-y-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Main Title</label>
+                          <Input placeholder="e.g. Premium AI Ads" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Subtitle</label>
+                          <Input placeholder="e.g. Elevate your brand" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Text</label>
+                             <Input placeholder="Get Started" value={bannerForm.cta_text} onChange={e => setBannerForm({...bannerForm, cta_text: e.target.value})} />
                            </div>
-                        ))}
-                        {filteredSamples.filter(s => s.media_type === "video").length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No AI Videos found.</p>}
-                      </TabsContent>
-
-                      <TabsContent value="images" className="grid grid-cols-3 gap-4">
-                        {filteredSamples.filter(s => s.media_type === "image").map(s => (
-                           <div key={s.id} className="relative group rounded-lg overflow-hidden border">
-                              <img src={s.media_url} className="w-full aspect-square object-cover" />
-                              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button variant="secondary" size="icon" onClick={() => handleEditSample(s)}><Settings2 className="w-4 h-4" /></Button>
-                                <Button variant="destructive" size="icon" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-4 h-4" /></Button>
-                              </div>
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Link</label>
+                             <Input placeholder="#form" value={bannerForm.cta_link} onChange={e => setBannerForm({...bannerForm, cta_link: e.target.value})} />
                            </div>
-                        ))}
-                        {filteredSamples.filter(s => s.media_type === "image").length === 0 && <p className="col-span-3 text-center py-10 text-muted-foreground text-sm">No AI Images found.</p>}
-                      </TabsContent>
-                    </Tabs>
-                  </CardContent>
-               </Card>
-             </div>
-          </TabsContent>
-
-          <TabsContent value="prompts" className="space-y-8">
-             <div className="grid md:grid-cols-3 gap-6">
-                <Card className="md:col-span-1">
-                   <CardHeader><CardTitle>Prompts Library</CardTitle></CardHeader>
-                   <CardContent>
-                      <form onSubmit={handleSavePrompt} className="space-y-4">
-                         <Input placeholder="Title" value={promptForm.title} onChange={e => setPromptForm({...promptForm, title: e.target.value})} />
-                         <Input placeholder="Brand" value={promptForm.brand} onChange={e => setPromptForm({...promptForm, brand: e.target.value})} />
-                         <div className="space-y-1">
-                           <label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Cover Image</label>
-                           <Input type="file" onChange={e => setPromptFile(e.target.files?.[0] || null)} />
-                         </div>
-                         <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Image Prompt" value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} />
-                         <textarea className="w-full bg-secondary p-2 rounded text-sm min-h-[100px]" placeholder="Video Prompt" value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} />
-                         <Button type="submit" disabled={uploading}>{uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save Prompt")}</Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media Type</label>
+                            <select className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm" value={bannerForm.media_type} onChange={e => setBannerForm({...bannerForm, media_type: e.target.value})}>
+                              <option value="image">Image</option>
+                              <option value="video">Video</option>
+                            </select>
+                          </div>
+                          <div className="flex items-center gap-2 pt-6">
+                             <input type="checkbox" id="is_offer" checked={bannerForm.is_offer} onChange={e => setBannerForm({...bannerForm, is_offer: e.target.checked})} className="w-4 h-4 rounded border-border" />
+                             <label htmlFor="is_offer" className="text-xs cursor-pointer select-none font-bold">Special Offer</label>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Marquee Text (• separate)</label>
+                          <textarea 
+                            placeholder="PREMIUM • FAST • AI" 
+                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm min-h-[80px]" 
+                            value={bannerForm.marquee_text} 
+                            onChange={e => setBannerForm({...bannerForm, marquee_text: e.target.value})} 
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Upload Media</label>
+                          <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} className="bg-background" />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={uploading}>
+                          {uploading ? "Uploading..." : (editingBannerId ? "Update Banner" : "Publish Banner")}
+                        </Button>
+                        {editingBannerId && (
+                          <Button variant="ghost" className="w-full text-xs" onClick={() => {
+                            setEditingBannerId(null);
+                            setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image', is_offer: false, marquee_text: '' });
+                          }}>Cancel Editing</Button>
+                        )}
                       </form>
-                   </CardContent>
+                    </div>
+
+                    {/* List */}
+                    <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2">
+                       {filteredBanners.map(b => (
+                        <div key={b.id} className={`flex items-center gap-4 p-4 border rounded-2xl group transition-all hover:shadow-md ${b.is_offer ? 'bg-gold/5 border-gold/20' : 'bg-background'}`}>
+                          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-border/50">
+                            {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[8px] text-muted-foreground font-bold">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
+                          </div>
+                          <div className="flex-grow">
+                            <h4 className={`font-bold text-sm leading-tight ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
+                            <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">{b.subtitle}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline" className="text-[8px] h-4 uppercase tracking-tighter">{b.media_type}</Badge>
+                              {b.is_offer && <Badge className="bg-gold/20 text-gold text-[8px] h-4 uppercase tracking-tighter">Offer Active</Badge>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditBanner(b, 'regular')}><Settings2 className="w-4 h-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
                 </Card>
-                <Card className="md:col-span-2">
-                   <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                      <CardTitle>Existing Prompts</CardTitle>
-                      <div className="relative w-48">
-                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                         <Input 
-                          placeholder="Search prompts..." 
-                          value={searchTerm} 
-                          onChange={(e) => setSearchTerm(e.target.value)} 
-                          className="pl-8 h-8 text-xs bg-secondary/50 border-none"
-                         />
-                      </div>
-                   </CardHeader>
-                   <CardContent>
-                      <Table>
-                         <TableHeader><TableRow><TableHead>Ad / Cover</TableHead><TableHead>Brand</TableHead><TableHead>Title</TableHead><TableHead></TableHead></TableRow></TableHeader>
-                         <TableBody>
-                            {filteredPrompts.map(p => (
-                               <TableRow key={p.id}>
-                                  <TableCell>
-                                     {p.media_url ? (
-                                       <img src={p.media_url} className="w-12 h-12 rounded object-cover border" />
-                                     ) : (
-                                       <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center text-[10px] text-muted-foreground italic">No Image</div>
-                                     )}
-                                  </TableCell>
-                                  <TableCell>{p.brand}</TableCell>
-                                  <TableCell>{p.title}</TableCell>
-                                  <TableCell>
-                                    <div className="flex gap-2">
-                                      <Button variant="ghost" size="icon" onClick={() => handleEditPrompt(p)}><Settings2 className="w-4 h-4 text-muted-foreground" /></Button>
-                                      <Button variant="ghost" size="icon" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4 text-red-500" /></Button>
-                                    </div>
-                                  </TableCell>
-                               </TableRow>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="samples" className="mt-0 space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                 {/* Upload Card */}
+                 <div className="md:col-span-4 space-y-6">
+                    <Card className="border-gold/20 bg-gold/5 shadow-sm">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-display font-bold">Upload Portfolio</CardTitle>
+                        <CardDescription>Add new AI images or videos.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                         <form onSubmit={handleUploadSample} className="space-y-4">
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Project Title</label>
+                             <Input placeholder="e.g. Rolex Luxury Ad" value={title} onChange={e => setTitle(e.target.value)} />
+                           </div>
+                           <div className="space-y-1">
+                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media File</label>
+                             <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="bg-background" />
+                           </div>
+                           <Button className="w-full" disabled={uploading}>
+                             {uploading ? "Saving..." : (editingSampleId ? "Update Portfolio" : "Publish Portfolio")}
+                           </Button>
+                           {editingSampleId && (
+                             <Button variant="ghost" className="w-full text-xs" onClick={() => {
+                               setEditingSampleId(null);
+                               setTitle("");
+                             }}>Cancel Edit</Button>
+                           )}
+                         </form>
+                      </CardContent>
+                    </Card>
+                 </div>
+
+                 {/* Portfolio Grid */}
+                 <div className="md:col-span-8">
+                    <Card className="border-border/50 shadow-sm overflow-hidden">
+                      <CardHeader className="flex flex-row items-center justify-between bg-secondary/10 pb-6 border-b border-border/30">
+                        <div>
+                          <CardTitle className="text-xl font-display font-bold">Active Portfolio</CardTitle>
+                          <CardDescription>Manage shown images and videos.</CardDescription>
+                        </div>
+                        <div className="relative w-48">
+                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                           <Input 
+                            placeholder="Search projects..." 
+                            value={searchTerm} 
+                            onChange={(e) => setSearchTerm(e.target.value)} 
+                            className="pl-8 h-8 text-xs bg-background border-border/50"
+                           />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <Tabs defaultValue="videos" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 p-1 h-10">
+                            <TabsTrigger value="videos" className="text-xs">AI Videos ({filteredSamples.filter(s => s.media_type === "video").length})</TabsTrigger>
+                            <TabsTrigger value="images" className="text-xs">AI Images ({filteredSamples.filter(s => s.media_type === "image").length})</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="videos" className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {filteredSamples.filter(s => s.media_type === "video").map(s => (
+                               <div key={s.id} className="relative group rounded-xl overflow-hidden border border-border/50 bg-black aspect-square">
+                                  <video src={s.media_url} className="w-full h-full object-cover opacity-80" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
+                                     <p className="text-[10px] font-bold text-white text-center mb-2 line-clamp-2">{s.title}</p>
+                                     <div className="flex gap-2">
+                                        <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => handleEditSample(s)}><Settings2 className="w-3.5 h-3.5" /></Button>
+                                        <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-3.5 h-3.5" /></Button>
+                                     </div>
+                                  </div>
+                               </div>
                             ))}
-                         </TableBody>
-                      </Table>
-                   </CardContent>
-                </Card>
-             </div>
-          </TabsContent>
-        </Tabs>
+                            {filteredSamples.filter(s => s.media_type === "video").length === 0 && (
+                               <div className="col-span-full py-20 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30">
+                                  <p className="text-muted-foreground text-sm italic">No AI Videos found.</p>
+                               </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="images" className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {filteredSamples.filter(s => s.media_type === "image").map(s => (
+                               <div key={s.id} className="relative group rounded-xl overflow-hidden border border-border/50 aspect-square">
+                                  <img src={s.media_url} className="w-full h-full object-cover" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
+                                     <p className="text-[10px] font-bold text-white text-center mb-2 line-clamp-2">{s.title}</p>
+                                     <div className="flex gap-2">
+                                        <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => handleEditSample(s)}><Settings2 className="w-3.5 h-3.5" /></Button>
+                                        <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-3.5 h-3.5" /></Button>
+                                     </div>
+                                  </div>
+                               </div>
+                            ))}
+                            {filteredSamples.filter(s => s.media_type === "image").length === 0 && (
+                               <div className="col-span-full py-20 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30">
+                                  <p className="text-muted-foreground text-sm italic">No AI Images found.</p>
+                               </div>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+                      </CardContent>
+                    </Card>
+                 </div>
+               </div>
+            </TabsContent>
+
+            <TabsContent value="prompts" className="mt-0 space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* Form */}
+                  <div className="md:col-span-4">
+                    <Card className="shadow-sm">
+                       <CardHeader>
+                          <CardTitle className="text-xl font-display font-bold">Prompt Builder</CardTitle>
+                          <CardDescription>Save creative AI prompts.</CardDescription>
+                       </CardHeader>
+                       <CardContent>
+                          <form onSubmit={handleSavePrompt} className="space-y-4">
+                             <div className="space-y-1">
+                               <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Title</label>
+                               <Input placeholder="e.g. Cinematic Watch" value={promptForm.title} onChange={e => setPromptForm({...promptForm, title: e.target.value})} />
+                             </div>
+                             <div className="space-y-1">
+                               <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Brand</label>
+                               <Input placeholder="e.g. Rolex" value={promptForm.brand} onChange={e => setPromptForm({...promptForm, brand: e.target.value})} />
+                             </div>
+                             <div className="space-y-1">
+                               <label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Cover Preview</label>
+                               <Input type="file" onChange={e => setPromptFile(e.target.files?.[0] || null)} className="bg-secondary/30" />
+                             </div>
+                             <div className="space-y-1">
+                               <label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Image Prompt</label>
+                               <textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30 transition-all" placeholder="Enter detailed prompt..." value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} />
+                             </div>
+                             <div className="space-y-1">
+                               <label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Video Prompt</label>
+                               <textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30 transition-all" placeholder="Enter video motion prompt..." value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} />
+                             </div>
+                             <Button type="submit" className="w-full" disabled={uploading}>
+                                {uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save to Library")}
+                             </Button>
+                             {editingPromptId && (
+                               <Button variant="ghost" className="w-full text-xs" onClick={() => {
+                                 setEditingPromptId(null);
+                                 setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true });
+                               }}>Cancel Edit</Button>
+                             )}
+                          </form>
+                       </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* List */}
+                  <div className="md:col-span-8">
+                    <Card className="shadow-sm">
+                       <CardHeader className="flex flex-row items-center justify-between pb-6">
+                          <div>
+                            <CardTitle className="text-xl font-display font-bold">Prompts Library</CardTitle>
+                            <CardDescription>Your saved AI ad concepts.</CardDescription>
+                          </div>
+                          <div className="relative w-48">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                             <Input 
+                              placeholder="Search library..." 
+                              value={searchTerm} 
+                              onChange={(e) => setSearchTerm(e.target.value)} 
+                              className="pl-8 h-8 text-xs bg-secondary/50 border-none"
+                             />
+                          </div>
+                       </CardHeader>
+                       <CardContent>
+                          <Table>
+                             <TableHeader>
+                               <TableRow className="hover:bg-transparent">
+                                 <TableHead>Preview</TableHead>
+                                 <TableHead>Brand & Title</TableHead>
+                                 <TableHead className="text-right">Actions</TableHead>
+                               </TableRow>
+                             </TableHeader>
+                             <TableBody>
+                                {filteredPrompts.map(p => (
+                                   <TableRow key={p.id} className="group">
+                                      <TableCell>
+                                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-border/50 bg-secondary/20 shadow-sm">
+                                            {p.media_url ? (
+                                              <img src={p.media_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                            ) : (
+                                              <div className="w-full h-full flex items-center justify-center text-[8px] text-muted-foreground uppercase font-bold tracking-widest px-2 text-center italic">No Preview</div>
+                                            )}
+                                         </div>
+                                      </TableCell>
+                                      <TableCell>
+                                         <div className="text-sm font-bold">{p.title}</div>
+                                         <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.1em] mt-1">{p.brand}</div>
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleEditPrompt(p)}><Settings2 className="w-4 h-4 text-muted-foreground" /></Button>
+                                          <Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4" /></Button>
+                                        </div>
+                                      </TableCell>
+                                   </TableRow>
+                                ))}
+                                {filteredPrompts.length === 0 && (
+                                  <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-20 text-muted-foreground italic">No prompts found.</TableCell>
+                                  </TableRow>
+                                )}
+                             </TableBody>
+                          </Table>
+                       </CardContent>
+                    </Card>
+                  </div>
+               </div>
+            </TabsContent>
+          </main>
+        </div>
+
       </div>
     </div>
   );

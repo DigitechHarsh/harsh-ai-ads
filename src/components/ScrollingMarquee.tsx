@@ -16,7 +16,7 @@ const ScrollingMarquee = ({ items }: { items?: string }) => {
   const doubledItems = [...marqueeItems, ...marqueeItems];
 
   return (
-    <div className="w-full bg-gold/10 border-y border-gold/20 py-2 overflow-hidden select-none mb-2">
+    <div className="w-full bg-gold/10 border-y border-gold/20 py-2 overflow-hidden select-none">
       <div className="animate-marquee whitespace-nowrap flex items-center">
         {doubledItems.map((item, index) => (
           <div key={index} className="flex items-center mx-8">
