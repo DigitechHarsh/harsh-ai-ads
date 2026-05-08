@@ -22,13 +22,22 @@ const ProblemSection = () => (
         {problems.map((p, i) => (
           <motion.div
             key={i}
-            className="bg-card border border-border rounded-xl p-8 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            className="bg-card border border-border rounded-xl p-8 text-center hover:border-destructive/30 transition-colors group"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.15 }}
+            transition={{ 
+              duration: 0.5, 
+              delay: i * 0.15,
+              ease: "easeOut"
+            }}
           >
-            <p.icon className="w-10 h-10 text-destructive mx-auto mb-4" />
+            <motion.div
+              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p.icon className="w-10 h-10 text-destructive mx-auto mb-4 group-hover:drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]" />
+            </motion.div>
             <p className="text-lg font-medium text-foreground">{p.text}</p>
           </motion.div>
         ))}

@@ -42,14 +42,20 @@ const ProcessSection = () => (
         {steps.map((step, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.2 }}
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ 
+              duration: 0.6, 
+              delay: index * 0.2,
+              ease: [0.22, 1, 0.36, 1] 
+            }}
             className="relative z-10 text-center group"
           >
-            <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${step.color} border border-white/5 flex items-center justify-center mb-8 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl`}>
+            <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${step.color} border border-white/5 flex items-center justify-center mb-8 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl relative`}>
               <step.icon className="w-10 h-10 text-gold" />
+              {/* Animated glow on hover */}
+              <div className="absolute inset-0 bg-gold/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity rounded-full -z-10" />
             </div>
             
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-background border border-gold/30 flex items-center justify-center text-xs font-bold text-gold">
@@ -57,7 +63,7 @@ const ProcessSection = () => (
             </div>
 
             <h3 className="text-xl font-bold mb-4 group-hover:text-gold transition-colors">{step.title}</h3>
-            <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
+            <p className="text-muted-foreground leading-relaxed text-sm md:text-base px-2">
               {step.description}
             </p>
           </motion.div>

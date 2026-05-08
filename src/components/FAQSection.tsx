@@ -67,18 +67,25 @@ const FAQSection = () => {
         >
           <Accordion type="single" collapsible className="w-full space-y-4">
             {faqs.map((faq, index) => (
-              <AccordionItem 
-                key={index} 
-                value={`item-${index}`}
-                className="bg-card border border-border px-6 py-2 rounded-xl"
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                <AccordionTrigger className="text-left font-semibold hover:text-gold transition-colors">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
+                <AccordionItem 
+                  value={`item-${index}`}
+                  className="bg-card border border-border px-6 py-2 rounded-xl hover:border-gold/30 transition-colors group"
+                >
+                  <AccordionTrigger className="text-left font-semibold hover:text-gold transition-colors no-underline">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
             ))}
           </Accordion>
         </motion.div>

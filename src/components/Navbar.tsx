@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { Menu, X, Sparkles } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -8,6 +8,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -25,10 +32,14 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`w-full z-[60] transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
         scrolled ? "bg-background/80 backdrop-blur-md border-b border-border/50 py-3" : "bg-transparent py-5"
       }`}
     >
+      <motion.div 
+        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold-gradient origin-left"
+        style={{ scaleX }}
+      />
       <div className="container max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
