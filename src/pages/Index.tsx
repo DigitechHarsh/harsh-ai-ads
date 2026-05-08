@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
+import ServicesSection from "@/components/ServicesSection";
 import ProcessSection from "@/components/ProcessSection";
 import SamplesSection from "@/components/SamplesSection";
 import ContactForm from "@/components/ContactForm";
@@ -63,6 +64,7 @@ const Index = () => {
       <ProblemSection />
       <SolutionSection />
       <BeforeAfterSlider beforeImage={beforeImg} afterImage={afterImg} />
+      <ServicesSection />
       <ProcessSection />
       <SamplesSection />
       <TestimonialsSection />
