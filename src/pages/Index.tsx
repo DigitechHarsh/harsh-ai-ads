@@ -8,6 +8,7 @@ import ContactForm from "@/components/ContactForm";
 import TrustSection from "@/components/TrustSection";
 import FAQSection from "@/components/FAQSection";
 import FinalCTA from "@/components/FinalCTA";
+import TestimonialsSection from "@/components/TestimonialsSection";
 
 const Index = () => (
   <main className="min-h-screen bg-background">
@@ -16,7 +17,7 @@ const Index = () => (
     <SolutionSection />
     <ProcessSection />
     <SamplesSection />
-
+    <TestimonialsSection />
     <TrustSection />
     <FAQSection />
     <ContactForm />
