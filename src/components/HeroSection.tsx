@@ -8,6 +8,7 @@ import { ChevronRight, Sparkles } from "lucide-react";
 import logo from "@/assets/logo.png";
 import heroProduct from "@/assets/hero-product.jpg";
 import ScrollingMarquee from "./ScrollingMarquee";
+import ParticleBackground from "./ParticleBackground";
 
 const HeroSection = () => {
   const [banners, setBanners] = useState<any[]>([]);
@@ -49,6 +50,7 @@ const HeroSection = () => {
 
   return (
     <section className="relative pt-24 md:pt-32 overflow-hidden bg-black">
+      <ParticleBackground />
       <ScrollingMarquee items={banners[0]?.marquee_text} />
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
