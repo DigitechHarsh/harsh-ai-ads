@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import HeroSection from "@/components/HeroSection";
 import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
@@ -11,6 +12,7 @@ import FinalCTA from "@/components/FinalCTA";
 import TestimonialsSection from "@/components/TestimonialsSection";
 
 const Index = () => {
+  const navigate = useNavigate();
   useEffect(() => {
     const sections = document.querySelectorAll("section[id], div[id='form'], div[id='home']");
     const options = {
@@ -24,7 +26,12 @@ const Index = () => {
         if (entry.isIntersecting) {
           const id = entry.target.getAttribute("id");
           if (id) {
-            window.history.replaceState(null, "", `#${id}`);
+            // If we are in the samples section, only update hash if not already on a sub-tab
+            const currentHash = window.location.hash;
+            if (id === "samples" && (currentHash === "#aiimages" || currentHash === "#aivideos")) {
+              return;
+            }
+            navigate(`/#${id}`, { replace: true });
           }
         }
       });
