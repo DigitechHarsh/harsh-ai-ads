@@ -228,14 +228,6 @@ const TestimonialsSection = () => {
           </div>
         </div>
 
-        <div className="mt-20 pt-10 border-t border-border/30">
-           <p className="text-center text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-10">Trusted By Global Industry Leaders</p>
-           <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 opacity-30 grayscale hover:opacity-60 transition-all duration-700">
-              {['ROLEX', 'PORSCHE', 'GUCCI', 'PRADA', 'DIOR', 'APPLE', 'TESLA'].map(brand => (
-                <span key={brand} className="font-display font-black text-xl md:text-3xl tracking-tighter hover:text-gold cursor-default transition-colors">{brand}</span>
-              ))}
-           </div>
-        </div>
       </div>
     </section>
   );
