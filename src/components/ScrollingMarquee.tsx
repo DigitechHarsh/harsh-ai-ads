@@ -4,7 +4,7 @@ const ScrollingMarquee = ({ items }: { items?: string }) => {
   const defaultItems = [
     "PREMIUM AI ADS IN 24 HOURS",
     "SCROLL-STOPPING VISUALS",
-    "TRUSTED BY 500+ BRANDS",
+    "TRUSTED BY 25+ BRANDS",
     "SPECIAL OFFER ₹399 ONLY",
     "DOMINATE YOUR MARKET",
     "LUXURY PRODUCT TRANSFORMATION",

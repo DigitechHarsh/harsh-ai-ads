@@ -115,7 +115,7 @@ const TestimonialsSection = () => {
               What Our <span className="text-gold-gradient">Clients</span> Say
             </motion.h2>
             <p className="text-muted-foreground text-lg">
-              Join 500+ brands that are dominating their markets with our high-end AI visuals.
+              Join 25+ brands that are dominating their markets with our high-end AI visuals.
             </p>
           </div>
 
