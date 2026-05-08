@@ -10,6 +10,11 @@ import TrustSection from "@/components/TrustSection";
 import FAQSection from "@/components/FAQSection";
 import FinalCTA from "@/components/FinalCTA";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
+
+// Import assets for slider
+import beforeImg from "@/assets/before.png";
+import afterImg from "@/assets/after.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,6 +62,7 @@ const Index = () => {
       <HeroSection />
       <ProblemSection />
       <SolutionSection />
+      <BeforeAfterSlider beforeImage={beforeImg} afterImage={afterImg} />
       <ProcessSection />
       <SamplesSection />
       <TestimonialsSection />
