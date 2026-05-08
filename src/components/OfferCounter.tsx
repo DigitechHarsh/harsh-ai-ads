@@ -4,22 +4,31 @@ import { Zap, Clock, AlertCircle } from "lucide-react";
 
 const OfferCounter = () => {
   const [stats, setStats] = useState<{ total_claimed: number; claim_limit: number } | null>(null);
+  const [activeOffer, setActiveOffer] = useState<any>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/offers");
-        const data = await res.json();
-        setStats(data);
+        const [statsRes, bannersRes] = await Promise.all([
+          fetch("/api/offers"),
+          fetch("/api/hero")
+        ]);
+        const statsData = await statsRes.json();
+        const bannersData = await bannersRes.json();
+        
+        setStats(statsData);
+        if (Array.isArray(bannersData)) {
+          const offer = bannersData.find((b: any) => b.is_offer);
+          setActiveOffer(offer);
+        }
       } catch (e) {}
     };
-    fetchStats();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  if (!stats) return null;
+  if (!stats || !activeOffer) return null;
 
   const remaining = Math.max(stats.claim_limit - stats.total_claimed, 0);
 
@@ -32,7 +41,7 @@ const OfferCounter = () => {
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4 text-gold animate-pulse" />
         <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-gold/80">
-          HURRY! LIMITED TIME OFFER
+          {activeOffer.title || "LIMITED TIME OFFER"}
         </span>
       </div>
       
@@ -49,7 +58,7 @@ const OfferCounter = () => {
       <div className="flex items-center gap-2">
         <Clock className="w-4 h-4 text-gold" />
         <span className="text-[10px] md:text-xs font-bold text-white/60">
-          ₹399 OFFER ENDING SOON
+          {activeOffer.subtitle || "CLAIM NOW"}
         </span>
       </div>
 

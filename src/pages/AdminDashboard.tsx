@@ -623,82 +623,69 @@ export default function AdminDashboard() {
             </TabsContent>
 
             <TabsContent value="hero" className="mt-0 space-y-6">
-              <Card className="bg-primary/5 border-primary/20 overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                   <Zap className="w-24 h-24" />
-                </div>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-2xl font-display font-bold">
-                    <Settings2 className="w-6 h-6 text-gold" /> Offer Scarcity Control
-                  </CardTitle>
-                  <CardDescription>Manage how many ₹399 offers can be claimed globally.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {offerStats && (
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-background/50 p-4 rounded-xl border border-border/50">
-                         <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Claimed</p>
-                         <h4 className="text-3xl font-bold text-gold">{offerStats.total_claimed}</h4>
-                      </div>
-                      <div className="bg-background/50 p-4 rounded-xl border border-border/50">
-                         <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Max Limit</p>
-                         <h4 className="text-3xl font-bold">{offerStats.claim_limit}</h4>
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex flex-col sm:flex-row gap-2 items-end pt-2">
-                    <div className="space-y-1 w-full sm:w-48">
-                      <label className="text-xs font-bold text-muted-foreground uppercase">Set New Limit</label>
-                      <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} className="bg-background" />
-                    </div>
-                    <Button onClick={handleUpdateLimit} className="w-full sm:w-auto">Update Offer Limit</Button>
-                    <Button onClick={handleResetOffer} variant="destructive" className="w-full sm:w-auto">
-                      <RotateCcw className="w-4 h-4 mr-2" /> Reset All Claims
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
               <div className="grid grid-cols-1 gap-6">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="border-border/50 shadow-sm overflow-hidden">
+                  <CardHeader className="flex flex-col sm:flex-row items-center justify-between bg-secondary/10 pb-6 border-b border-border/30 gap-4">
                     <div>
-                      <CardTitle>Manage Offers & Banners</CardTitle>
-                      <CardDescription>Banners shown in the hero slider and marquee text.</CardDescription>
+                      <CardTitle className="text-xl font-display font-bold flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-gold" /> Offers & Hero Banners
+                      </CardTitle>
+                      <CardDescription>Manage your landing page offers and scarcity limits.</CardDescription>
                     </div>
-                    <div className="relative w-48">
-                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                       <Input 
-                        placeholder="Search banners..." 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
-                        className="pl-8 h-8 text-xs bg-secondary/50 border-none"
-                       />
+                    
+                    {/* Integrated Scarcity Controls */}
+                    <div className="flex items-center gap-3 bg-background/50 p-2 rounded-xl border border-border/50">
+                       <div className="flex flex-col px-2">
+                          <span className="text-[8px] font-bold uppercase text-muted-foreground">Slots Left</span>
+                          <span className="text-sm font-bold text-gold">
+                            {offerStats ? Math.max(offerStats.claim_limit - offerStats.total_claimed, 0) : '0'} / {offerStats?.claim_limit || '0'}
+                          </span>
+                       </div>
+                       <div className="w-[1px] h-8 bg-border/50" />
+                       <div className="flex flex-col px-2">
+                          <span className="text-[8px] font-bold uppercase text-muted-foreground">Total Claimed</span>
+                          <span className="text-sm font-bold">{offerStats?.total_claimed || 0}</span>
+                       </div>
+                       <div className="flex gap-1 ml-2">
+                          <Input 
+                            type="number" 
+                            value={newLimit} 
+                            onChange={(e) => setNewLimit(e.target.value)} 
+                            className="w-16 h-8 text-xs bg-background" 
+                            placeholder="Limit"
+                          />
+                          <Button size="icon" className="h-8 w-8" onClick={handleUpdateLimit} title="Update Limit">
+                            <Settings2 className="w-3 h-3" />
+                          </Button>
+                          <Button size="icon" variant="destructive" className="h-8 w-8" onClick={handleResetOffer} title="Reset Claims">
+                            <RotateCcw className="w-3 h-3" />
+                          </Button>
+                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <CardContent className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
                     {/* Add Form */}
-                    <div className="space-y-4 bg-secondary/20 p-6 rounded-2xl border border-border/50">
-                      <h4 className="font-bold text-sm uppercase tracking-widest text-muted-foreground mb-4">
+                    <div className="lg:col-span-4 space-y-4 bg-secondary/20 p-6 rounded-2xl border border-border/50 h-fit">
+                      <h4 className="font-bold text-xs uppercase tracking-widest text-muted-foreground mb-4">
                         {editingBannerId ? "Edit Banner" : "Add New Banner"}
                       </h4>
                       <form onSubmit={handleSaveBanner} className="space-y-4">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Main Title</label>
-                          <Input placeholder="e.g. Premium AI Ads" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} />
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Main Title (Display on Counter)</label>
+                          <Input placeholder="e.g. SPECIAL OFFER" value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} className="bg-background" />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Subtitle</label>
-                          <Input placeholder="e.g. Elevate your brand" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} />
+                          <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Subtitle (Counter Subtext)</label>
+                          <Input placeholder="e.g. ₹399 ONLY" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} className="bg-background" />
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                            <div className="space-y-1">
                              <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Text</label>
-                             <Input placeholder="Get Started" value={bannerForm.cta_text} onChange={e => setBannerForm({...bannerForm, cta_text: e.target.value})} />
+                             <Input placeholder="Get Started" value={bannerForm.cta_text} onChange={e => setBannerForm({...bannerForm, cta_text: e.target.value})} className="bg-background" />
                            </div>
                            <div className="space-y-1">
                              <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Link</label>
-                             <Input placeholder="#form" value={bannerForm.cta_link} onChange={e => setBannerForm({...bannerForm, cta_link: e.target.value})} />
+                             <Input placeholder="#form" value={bannerForm.cta_link} onChange={e => setBannerForm({...bannerForm, cta_link: e.target.value})} className="bg-background" />
                            </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -711,14 +698,14 @@ export default function AdminDashboard() {
                           </div>
                           <div className="flex items-center gap-2 pt-6">
                              <input type="checkbox" id="is_offer" checked={bannerForm.is_offer} onChange={e => setBannerForm({...bannerForm, is_offer: e.target.checked})} className="w-4 h-4 rounded border-border" />
-                             <label htmlFor="is_offer" className="text-xs cursor-pointer select-none font-bold">Special Offer</label>
+                             <label htmlFor="is_offer" className="text-[10px] cursor-pointer select-none font-bold uppercase">Activate Scarcity</label>
                           </div>
                         </div>
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Marquee Text (• separate)</label>
                           <textarea 
                             placeholder="PREMIUM • FAST • AI" 
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm min-h-[80px]" 
+                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm min-h-[60px]" 
                             value={bannerForm.marquee_text} 
                             onChange={e => setBannerForm({...bannerForm, marquee_text: e.target.value})} 
                           />
@@ -727,8 +714,8 @@ export default function AdminDashboard() {
                           <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Upload Media</label>
                           <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} className="bg-background" />
                         </div>
-                        <Button type="submit" className="w-full" disabled={uploading}>
-                          {uploading ? "Uploading..." : (editingBannerId ? "Update Banner" : "Publish Banner")}
+                        <Button type="submit" className="w-full h-11 bg-gold hover:bg-gold-dark text-black font-bold" disabled={uploading}>
+                          {uploading ? "Saving..." : (editingBannerId ? "Update Banner" : "Publish Banner")}
                         </Button>
                         {editingBannerId && (
                           <Button variant="ghost" className="w-full text-xs" onClick={() => {
@@ -740,26 +727,71 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* List */}
-                    <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2">
-                       {filteredBanners.map(b => (
-                        <div key={b.id} className={`flex items-center gap-4 p-4 border rounded-2xl group transition-all hover:shadow-md ${b.is_offer ? 'bg-gold/5 border-gold/20' : 'bg-background'}`}>
-                          <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-border/50">
-                            {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center text-[8px] text-muted-foreground font-bold">VIDEO</div> : <img src={b.media_url} className="w-full h-full object-cover" />}
-                          </div>
-                          <div className="flex-grow">
-                            <h4 className={`font-bold text-sm leading-tight ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
-                            <p className="text-[10px] text-muted-foreground line-clamp-1 mt-1">{b.subtitle}</p>
-                            <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="outline" className="text-[8px] h-4 uppercase tracking-tighter">{b.media_type}</Badge>
-                              {b.is_offer && <Badge className="bg-gold/20 text-gold text-[8px] h-4 uppercase tracking-tighter">Offer Active</Badge>}
+                    <div className="lg:col-span-8 space-y-4">
+                       <div className="flex items-center justify-between mb-2 px-1">
+                         <h4 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Active Banners & Offers</h4>
+                         <div className="relative w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                            <Input 
+                             placeholder="Search banners..." 
+                             value={searchTerm} 
+                             onChange={(e) => setSearchTerm(e.target.value)} 
+                             className="pl-8 h-8 text-xs bg-secondary/50 border-border/50"
+                            />
+                         </div>
+                       </div>
+                       
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+                          {filteredBanners.map(b => (
+                            <div key={b.id} className={`flex flex-col p-4 border rounded-2xl group transition-all hover:shadow-lg relative overflow-hidden ${b.is_offer ? 'bg-gold/5 border-gold/30 shadow-gold/5' : 'bg-background border-border/50'}`}>
+                              {b.is_offer && (
+                                <div className="absolute top-0 right-0">
+                                   <div className="bg-gold text-black text-[8px] font-bold px-3 py-1 rounded-bl-xl uppercase">Tracking Scarcity</div>
+                                </div>
+                              )}
+                              
+                              <div className="flex gap-4">
+                                <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-border/50 shadow-inner">
+                                  {b.media_type === 'video' ? (
+                                    <div className="w-full h-full flex items-center justify-center bg-zinc-900">
+                                       <Zap className="w-6 h-6 text-gold/50" />
+                                    </div>
+                                  ) : (
+                                    <img src={b.media_url} className="w-full h-full object-cover" />
+                                  )}
+                                </div>
+                                <div className="flex-grow min-w-0">
+                                  <h4 className={`font-bold text-base leading-tight truncate ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
+                                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{b.subtitle}</p>
+                                  <div className="flex items-center gap-2 mt-3">
+                                    <Badge variant="outline" className="text-[9px] h-5 uppercase px-2 font-medium">{b.media_type}</Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 uppercase px-2 font-medium">{b.cta_text}</Badge>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-4 pt-4 border-t border-border/30 flex items-center justify-between">
+                                 <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                                   {b.marquee_text ? `Marquee: ${b.marquee_text.substring(0, 20)}...` : 'No marquee text'}
+                                 </div>
+                                 <div className="flex gap-2">
+                                    <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleEditBanner(b, 'regular')}>
+                                      <Settings2 className="w-4 h-4" />
+                                    </Button>
+                                    <Button variant="destructive" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleDeleteBanner(b.id)}>
+                                      <Trash className="w-4 h-4" />
+                                    </Button>
+                                 </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditBanner(b, 'regular')}><Settings2 className="w-4 h-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteBanner(b.id)}><Trash className="w-4 h-4" /></Button>
-                          </div>
-                        </div>
-                      ))}
+                          ))}
+                          {filteredBanners.length === 0 && (
+                            <div className="col-span-full py-20 text-center bg-secondary/5 rounded-3xl border-2 border-dashed border-border/20">
+                               <Zap className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                               <p className="text-muted-foreground text-sm italic">No banners found.</p>
+                            </div>
+                          )}
+                       </div>
                     </div>
                   </CardContent>
                 </Card>
