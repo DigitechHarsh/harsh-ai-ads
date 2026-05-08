@@ -533,19 +533,6 @@ export default function AdminDashboard() {
                 <Sparkles className="w-4 h-4" /> Prompts
               </TabsTrigger>
             </TabsList>
-            
-            <Card className="mt-8 bg-gold/5 border-gold/10 hidden md:block">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-gold" /> Quick Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start text-[10px]" onClick={handleResetOffer}>
-                  <RotateCcw className="w-3 h-3 mr-2" /> Reset Claims
-                </Button>
-              </CardContent>
-            </Card>
           </aside>
 
           {/* Main Content Area */}
