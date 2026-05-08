@@ -1,12 +1,44 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 const SamplesSection = () => {
   const [samples, setSamples] = useState<any[]>([]);
   const [selectedSample, setSelectedSample] = useState<any | null>(null);
+  const { hash } = useLocation();
+  const navigate = useNavigate();
+
+  // Determine active tab from hash
+  const getActiveTab = () => {
+    if (hash === "#aiimages") return "images";
+    return "videos";
+  };
+
+  const handleTabChange = (value: string) => {
+    const newHash = value === "images" ? "#aiimages" : "#aivideos";
+    navigate(`/${newHash}`, { replace: true });
+    
+    // Smooth scroll to the section if tab changed manually
+    const element = document.getElementById("samples");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    if (hash === "#aivideos" || hash === "#aiimages") {
+      const element = document.getElementById("samples");
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, [hash]);
 
   useEffect(() => {
     const fetchSamples = async () => {
@@ -20,7 +52,9 @@ const SamplesSection = () => {
   }, []);
 
   return (
-    <section id="samples" className="py-10 md:py-16 px-4">
+    <section id="samples" className="relative py-10 md:py-16 px-4">
+      <div id="aivideos" className="absolute -top-24" />
+      <div id="aiimages" className="absolute -top-24" />
       <div className="container">
         <motion.h2
           className="text-2xl md:text-4xl font-display font-bold text-center mb-4"
@@ -34,7 +68,11 @@ const SamplesSection = () => {
           See how we transform ordinary products into premium visuals
         </p>
 
-        <Tabs defaultValue="videos" className="w-full max-w-4xl mx-auto">
+        <Tabs 
+          value={getActiveTab()} 
+          onValueChange={handleTabChange}
+          className="w-full max-w-4xl mx-auto"
+        >
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-secondary border border-border">
             <TabsTrigger value="videos">AI Videos</TabsTrigger>
             <TabsTrigger value="images">AI Images</TabsTrigger>
