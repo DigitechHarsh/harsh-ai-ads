@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Sparkles } from "lucide-react";
 import logo from "@/assets/logo.png";
 import heroProduct from "@/assets/hero-product.jpg";
+import ScrollingMarquee from "./ScrollingMarquee";
 
 const HeroSection = () => {
   const [banners, setBanners] = useState<any[]>([]);
@@ -47,7 +48,8 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative pt-44 md:pt-48 overflow-hidden bg-black flex items-center">
+    <section className="relative pt-32 md:pt-40 overflow-hidden bg-black">
+      <ScrollingMarquee />
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-gold/10 rounded-full blur-[120px]" />
