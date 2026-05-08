@@ -48,8 +48,8 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative pt-32 md:pt-40 overflow-hidden bg-black">
-      <ScrollingMarquee />
+    <section className="relative pt-24 md:pt-32 overflow-hidden bg-black">
+      <ScrollingMarquee items={banners[0]?.marquee_text} />
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden select-none opacity-20">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-gold/10 rounded-full blur-[120px]" />

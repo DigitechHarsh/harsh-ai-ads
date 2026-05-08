@@ -626,6 +626,12 @@ export default function AdminDashboard() {
                        <input type="checkbox" id="is_offer" checked={bannerForm.is_offer} onChange={e => setBannerForm({...bannerForm, is_offer: e.target.checked})} className="w-4 h-4 rounded border-border" />
                        <label htmlFor="is_offer" className="text-sm cursor-pointer select-none">Mark as Special Offer (Ads limit counter)</label>
                     </div>
+                    <textarea 
+                      placeholder="Marquee Text (Use • to separate items)" 
+                      className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm min-h-[80px]" 
+                      value={bannerForm.marquee_text} 
+                      onChange={e => setBannerForm({...bannerForm, marquee_text: e.target.value})} 
+                    />
                     <Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} />
                     <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Uploading..." : (editingBannerId ? "Update Banner" : "Publish Banner")}</Button>
                   </form>
