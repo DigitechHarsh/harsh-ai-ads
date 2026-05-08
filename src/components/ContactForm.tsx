@@ -11,6 +11,8 @@ const ContactForm = () => {
     phone: "",
     email: "",
     productType: "",
+    budget: "399",
+    service: "image",
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -240,6 +242,36 @@ const ContactForm = () => {
               maxLength={255}
               type="email"
             />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="space-y-1">
+                 <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Est. Budget</label>
+                 <select 
+                   name="budget" 
+                   className={inputClass} 
+                   value={formData.budget} 
+                   onChange={(e: any) => setFormData({...formData, budget: e.target.value})}
+                 >
+                   <option value="399">Special Offer (₹399)</option>
+                   <option value="5000">Standard (₹5,000+)</option>
+                   <option value="15000">Premium (₹15,000+)</option>
+                   <option value="custom">Custom Package</option>
+                 </select>
+               </div>
+               <div className="space-y-1">
+                 <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Service Needed</label>
+                 <select 
+                   name="service" 
+                   className={inputClass} 
+                   value={formData.service} 
+                   onChange={(e: any) => setFormData({...formData, service: e.target.value})}
+                 >
+                   <option value="image">AI Image Ad</option>
+                   <option value="video">AI Video Ad</option>
+                   <option value="both">Both (Image + Video)</option>
+                   <option value="bulk">Bulk Order (10+ Ads)</option>
+                 </select>
+               </div>
+            </div>
 
             {/* Image Upload Section */}
             <div className="space-y-3">

@@ -20,13 +20,21 @@ const SamplesSection = () => {
 
   const handleTabChange = (value: string) => {
     const newHash = value === "images" ? "#aiimages" : "#aivideos";
-    navigate(`/${newHash}`, { replace: true });
     
-    // Smooth scroll to the section if tab changed manually
-    const element = document.getElementById("samples");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+    // If we are on the home page or portfolio page, just update hash
+    if (location.pathname === "/" || location.pathname === "/portfolio") {
+       navigate(newHash, { replace: true });
+    } else {
+       navigate(`/${newHash}`, { replace: true });
     }
+    
+    // Smooth scroll to the container
+    setTimeout(() => {
+      const element = document.getElementById("samples");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50);
   };
 
   useEffect(() => {
