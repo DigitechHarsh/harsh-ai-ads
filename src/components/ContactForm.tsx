@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Send, CheckCircle, Image as ImageIcon, X, Plus } from "lucide-react";
+import { Send, CheckCircle, Image as ImageIcon, X, Plus, Mail, MessageCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 
@@ -142,21 +142,57 @@ const ContactForm = () => {
   }
 
   return (
-    <section id="form" className="py-12 md:py-16 px-4">
-      <div className="container max-w-xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="text-2xl md:text-4xl font-display font-bold text-center mb-2">
-            Get <span className="text-gold-gradient">Started</span>
-          </h2>
-          <p className="text-muted-foreground text-center mb-10">
-            Fill details & upload product images (max 5)
-          </p>
+    <section id="form" className="py-12 md:py-16 px-4 bg-secondary/10">
+      <div className="container max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Contact Info Side */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="space-y-8"
+          >
+            <div>
+              <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
+                Let's Build Your <span className="text-gold-gradient">Next Masterpiece</span>
+              </h2>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Fill details & upload product images to get your premium AI ad. Or reach out to us directly below.
+              </p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-6">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-background border border-border/50 group hover:border-gold/30 transition-all duration-300">
+                <div className="p-3 rounded-lg bg-gold/10 text-gold group-hover:scale-110 transition-transform">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email Us</p>
+                  <a href="mailto:aicreationsbyharsh@gmail.com" className="text-foreground transition-colors font-semibold hover:text-gold">aicreationsbyharsh@gmail.com</a>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-background border border-border/50 group hover:border-gold/30 transition-all duration-300">
+                <div className="p-3 rounded-lg bg-gold/10 text-gold group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">WhatsApp</p>
+                  <a href="https://wa.me/918160587315" className="text-foreground transition-colors font-semibold hover:text-gold">+91 81605 87315</a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Form Side */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="bg-background p-6 md:p-8 rounded-2xl border border-border/50 shadow-xl"
+          >
+            <form onSubmit={handleSubmit} className="space-y-4">
             <input
               name="name"
               placeholder="Full Name *"
@@ -256,7 +292,8 @@ const ContactForm = () => {
               {loading ? "Uploading Images..." : <><Send className="w-5 h-5" /> Get My AI Ad</>}
             </button>
           </form>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
