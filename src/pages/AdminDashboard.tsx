@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [samples, setSamples] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [isTeaser, setIsTeaser] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   // Offer Stats
@@ -167,7 +168,7 @@ export default function AdminDashboard() {
 
       if (file) {
         publicUrl = await uploadToCloudinary(file);
-        mediaType = file.type.startsWith("video/") ? "video" : "image";
+        mediaType = isTeaser ? "teaser" : (file.type.startsWith("video/") ? "video" : "image");
       }
 
       const payload: any = { title };
@@ -187,6 +188,7 @@ export default function AdminDashboard() {
       setTitle("");
       setFile(null);
       setEditingSampleId(null);
+      setIsTeaser(false);
       fetchSamples();
     } catch(e: any) {
       toast.error(e.message);
@@ -197,6 +199,7 @@ export default function AdminDashboard() {
   const handleEditSample = (sample: any) => {
     setEditingSampleId(sample.id);
     setTitle(sample.title);
+    setIsTeaser(sample.media_type === "teaser");
     setFile(null); // Requires re-uploading file if they want to change it
     toast.info("Editing Sample. Enter new details above.");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -804,7 +807,11 @@ export default function AdminDashboard() {
                              <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media File</label>
                              <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="bg-background" />
                            </div>
-                           <Button className="w-full" disabled={uploading}>
+                           <div className="flex items-center gap-2 mt-2">
+                             <input type="checkbox" id="isTeaser" checked={isTeaser} onChange={(e) => setIsTeaser(e.target.checked)} className="rounded border-gray-300 text-gold focus:ring-gold" />
+                             <label htmlFor="isTeaser" className="text-xs font-medium text-muted-foreground cursor-pointer">Mark as AI Film Teaser</label>
+                           </div>
+                           <Button className="w-full mt-2" disabled={uploading}>
                              {uploading ? "Saving..." : (editingSampleId ? "Update Portfolio" : "Publish Portfolio")}
                            </Button>
                            {editingSampleId && (
@@ -838,9 +845,10 @@ export default function AdminDashboard() {
                       </CardHeader>
                       <CardContent className="pt-6">
                         <Tabs defaultValue="videos" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2 mb-6 bg-secondary/50 p-1 h-10">
+                          <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50 p-1 h-10">
                             <TabsTrigger value="videos" className="text-xs">AI Videos ({filteredSamples.filter(s => s.media_type === "video").length})</TabsTrigger>
                             <TabsTrigger value="images" className="text-xs">AI Images ({filteredSamples.filter(s => s.media_type === "image").length})</TabsTrigger>
+                            <TabsTrigger value="teasers" className="text-xs">Film Teasers ({filteredSamples.filter(s => s.media_type === "teaser").length})</TabsTrigger>
                           </TabsList>
 
                           <TabsContent value="videos" className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -879,6 +887,26 @@ export default function AdminDashboard() {
                             {filteredSamples.filter(s => s.media_type === "image").length === 0 && (
                                <div className="col-span-full py-20 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30">
                                   <p className="text-muted-foreground text-sm italic">No AI Images found.</p>
+                               </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="teasers" className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {filteredSamples.filter(s => s.media_type === "teaser").map(s => (
+                               <div key={s.id} className="relative group rounded-xl overflow-hidden border border-border/50 bg-black aspect-square">
+                                  <video src={s.media_url} className="w-full h-full object-cover opacity-80" />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
+                                     <p className="text-[10px] font-bold text-white text-center mb-2 line-clamp-2">{s.title}</p>
+                                     <div className="flex gap-2">
+                                        <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => handleEditSample(s)}><Settings2 className="w-3.5 h-3.5" /></Button>
+                                        <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-3.5 h-3.5" /></Button>
+                                     </div>
+                                  </div>
+                               </div>
+                            ))}
+                            {filteredSamples.filter(s => s.media_type === "teaser").length === 0 && (
+                               <div className="col-span-full py-20 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30">
+                                  <p className="text-muted-foreground text-sm italic">No AI Film Teasers found.</p>
                                </div>
                             )}
                           </TabsContent>
