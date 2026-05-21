@@ -26,7 +26,7 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
 
   // Offer Stats
-  const [offerStats, setOfferStats] = useState<{ total_claimed: number; claim_limit: number } | null>(null);
+  const [offerStats, setOfferStats] = useState<{ total_claimed: number; claim_limit: number; floating_bubble_enabled?: boolean; floating_bubble_text?: string; floating_bubble_cta?: string; } | null>(null);
   const [newLimit, setNewLimit] = useState("");
 
   // Banners
@@ -53,9 +53,18 @@ export default function AdminDashboard() {
   const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
   const authFetch = async (url: string, options: any = {}) => {
     const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token");
+    if (!token) {
+      navigate("/login");
+      throw new Error("No token — redirecting to login");
+    }
     const headers = { ...options.headers, Authorization: `Bearer ${token}` };
     const res = await fetch(url, { ...options, headers });
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      toast.error("Session expired. Please login again.");
+      navigate("/login");
+      throw new Error("Unauthorized");
+    }
     if (!res.ok) throw new Error(await res.text());
     return res.json();
   };
@@ -784,7 +793,76 @@ export default function AdminDashboard() {
                        </div>
                     </div>
                   </CardContent>
-                </Card>
+                 </Card>
+
+                 {/* ── Floating Bubble Control ── */}
+                 <Card className="border-gold/20 bg-gold/5 shadow-sm">
+                   <CardHeader>
+                     <CardTitle className="text-xl font-display font-bold flex items-center gap-2">
+                       <Sparkles className="w-5 h-5 text-gold" /> Floating Offer Bubble
+                     </CardTitle>
+                     <CardDescription>Control the bouncing 3D offer widget on the live site.</CardDescription>
+                   </CardHeader>
+                   <CardContent className="space-y-4">
+                     <div className="flex items-center justify-between p-3 bg-background rounded-xl border border-border/50">
+                       <div>
+                         <p className="text-sm font-bold">Enable Bubble</p>
+                         <p className="text-[11px] text-muted-foreground">Bounce widget appears after 5s on live site</p>
+                       </div>
+                       <input
+                         type="checkbox"
+                         className="w-5 h-5 rounded cursor-pointer accent-gold"
+                         checked={offerStats?.floating_bubble_enabled || false}
+                         onChange={async (e) => {
+                           try {
+                             await authFetch("/api/offers", {
+                               method: "PUT",
+                               headers: { "Content-Type": "application/json" },
+                               body: JSON.stringify({ floating_bubble_enabled: e.target.checked })
+                             });
+                             fetchOfferStats();
+                             toast.success(e.target.checked ? "Bubble enabled!" : "Bubble disabled!");
+                           } catch {}
+                         }}
+                       />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Bubble Offer Text</label>
+                       <Input
+                         placeholder="🔥 Special Offer! Only ₹399"
+                         defaultValue={offerStats?.floating_bubble_text || ""}
+                         id="bubbleText"
+                         className="bg-background"
+                       />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Button Label</label>
+                       <Input
+                         placeholder="Grab Now"
+                         defaultValue={offerStats?.floating_bubble_cta || ""}
+                         id="bubbleCta"
+                         className="bg-background"
+                       />
+                     </div>
+                     <Button
+                       className="w-full bg-gold hover:bg-gold text-black font-bold"
+                       onClick={async () => {
+                         const text = (document.getElementById("bubbleText") as HTMLInputElement)?.value;
+                         const cta  = (document.getElementById("bubbleCta")  as HTMLInputElement)?.value;
+                         try {
+                           await authFetch("/api/offers", {
+                             method: "PUT",
+                             headers: { "Content-Type": "application/json" },
+                             body: JSON.stringify({ floating_bubble_text: text, floating_bubble_cta: cta })
+                           });
+                           toast.success("Bubble settings saved!");
+                         } catch {}
+                       }}
+                     >
+                       Save Bubble Settings
+                     </Button>
+                   </CardContent>
+                 </Card>
               </div>
             </TabsContent>
 

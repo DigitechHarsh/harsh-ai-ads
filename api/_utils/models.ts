@@ -62,6 +62,9 @@ const OfferTrackerSchema = new mongoose.Schema({
   id: { type: Number, default: 1 },
   total_claimed: { type: Number, default: 0 },
   claim_limit: { type: Number, default: 20 },
+  floating_bubble_enabled: { type: Boolean, default: false },
+  floating_bubble_text: { type: String, default: '🔥 Special Offer! Only ₹399' },
+  floating_bubble_cta: { type: String, default: 'Grab Now' },
 });
 
 export const OfferTracker = mongoose.models.OfferTracker || mongoose.model('OfferTracker', OfferTrackerSchema);

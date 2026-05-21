@@ -6,91 +6,110 @@
 
 @layer base {
   :root {
-    --background: 0 0% 4%;
-    --foreground: 40 20% 92%;
-
-    --card: 0 0% 7%;
-    --card-foreground: 40 20% 92%;
-
-    --popover: 0 0% 7%;
-    --popover-foreground: 40 20% 92%;
-
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
     --primary: 43 80% 55%;
-    --primary-foreground: 0 0% 4%;
-
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 40 20% 85%;
-
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 55%;
-
-    --accent: 43 80% 55%;
-    --accent-foreground: 0 0% 4%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
     --ring: 43 80% 55%;
-
     --radius: 0.75rem;
-
-    --gold: 43 80% 55%;
-    --gold-dark: 43 60% 40%;
-    --gold-light: 43 90% 70%;
-    --surface-elevated: 0 0% 9%;
+    --gold: hsl(43 80% 55%);
+    /* 3D System */
+    --perspective: 1200px;
+    --perspective-near: 800px;
+    --perspective-far: 2000px;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground font-body antialiased;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; font-family: 'Inter', 'Outfit', sans-serif; }
 }
 
-@layer utilities {
-  .text-gold-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(43 90% 70%), hsl(43 80% 55%), hsl(43 60% 40%));
-  }
-
-  .bg-gold-gradient {
-    background-image: linear-gradient(135deg, hsl(43 80% 55%), hsl(43 60% 40%));
-  }
-
-  .border-gold-gradient {
-    border-image: linear-gradient(135deg, hsl(43 80% 55%), hsl(43 60% 40%)) 1;
-  }
-
-  .glow-gold {
-    box-shadow: 0 0 40px -10px hsl(43 80% 55% / 0.4);
-  }
-
-  .glow-gold-sm {
-    box-shadow: 0 0 20px -5px hsl(43 80% 55% / 0.3);
-  }
-
-  @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  .animate-marquee {
-    animation: marquee 20s linear infinite;
-    display: flex;
-    width: max-content;
-  }
-
-  .pause {
-    animation-play-state: paused;
-  }
+/* ─── Gold Gradient ─── */
+.text-gold-gradient {
+  background: linear-gradient(135deg, hsl(43 90% 65%), hsl(43 70% 45%), hsl(43 90% 60%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+.bg-gold-gradient { background: linear-gradient(135deg, hsl(43 90% 65%), hsl(43 70% 45%)); }
+.text-gold { color: hsl(43 80% 55%); }
+
+/* ─── 3D Perspective Containers ─── */
+.perspective-container {
+  perspective: var(--perspective);
+  perspective-origin: 50% 50%;
+}
+.perspective-near { perspective: var(--perspective-near); }
+.perspective-far  { perspective: var(--perspective-far); }
+
+/* ─── 3D Card Tilt (JS-driven via style prop) ─── */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+.card-3d-inner {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* ─── Float Animation ─── */
+@keyframes float-3d {
+  0%   { transform: translateY(0px) translateZ(0px) rotateX(0deg); }
+  33%  { transform: translateY(-12px) translateZ(20px) rotateX(2deg); }
+  66%  { transform: translateY(-6px) translateZ(10px) rotateX(-1deg); }
+  100% { transform: translateY(0px) translateZ(0px) rotateX(0deg); }
+}
+.animate-float-3d {
+  animation: float-3d 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+/* ─── Pulse Glow ─── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), 0 0 40px rgba(212, 175, 55, 0.1); }
+  50%       { box-shadow: 0 0 40px rgba(212, 175, 55, 0.5), 0 0 80px rgba(212, 175, 55, 0.2), 0 0 120px rgba(212, 175, 55, 0.1); }
+}
+.glow-gold-sm  { box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+.glow-gold-md  { animation: glow-pulse 3s ease-in-out infinite; }
+.glow-gold-lg  { box-shadow: 0 0 60px rgba(212, 175, 55, 0.4), 0 0 120px rgba(212, 175, 55, 0.2); }
+
+/* ─── Bounce Bubble (Floating Offer) ─── */
+@keyframes bubble-spin {
+  0%   { transform: rotateY(0deg) rotateX(0deg); }
+  25%  { transform: rotateY(8deg) rotateX(-4deg); }
+  50%  { transform: rotateY(0deg) rotateX(0deg); }
+  75%  { transform: rotateY(-8deg) rotateX(4deg); }
+  100% { transform: rotateY(0deg) rotateX(0deg); }
+}
+.bubble-3d {
+  transform-style: preserve-3d;
+  animation: bubble-spin 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ─── Scroll-Reveal 3D ─── */
+.reveal-3d-left  { transform: perspective(var(--perspective)) rotateY(-25deg) translateX(-60px); opacity: 0; }
+.reveal-3d-right { transform: perspective(var(--perspective)) rotateY(25deg) translateX(60px);  opacity: 0; }
+.reveal-3d-up    { transform: perspective(var(--perspective)) rotateX(20deg) translateY(40px);  opacity: 0; }
+.revealed { transform: perspective(var(--perspective)) rotateY(0deg) rotateX(0deg) translate(0,0); opacity: 1; transition: all 0.9s cubic-bezier(0.16,1,0.3,1); }
+
+/* ─── Scrollbar ─── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.3); border-radius: 99px; }

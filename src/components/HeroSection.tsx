@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence, useSpring } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -14,6 +14,20 @@ import OfferCounter from "./OfferCounter";
 const HeroSection = () => {
   const [banners, setBanners] = useState<any[]>([]);
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 2000, stopOnInteraction: false })]);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const heroMediaRef = useRef<HTMLDivElement>(null);
+
+  const handleHeroMouseMove = (e: React.MouseEvent) => {
+    if (!heroMediaRef.current) return;
+    const rect = heroMediaRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    setTilt({
+      x: ((e.clientY - cy) / (rect.height / 2)) * -8,
+      y: ((e.clientX - cx) / (rect.width / 2)) * 10,
+    });
+  };
+  const handleHeroMouseLeave = () => setTilt({ x: 0, y: 0 });
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -106,34 +120,32 @@ const HeroSection = () => {
                   </div>
                 </motion.div>
 
-                {/* Right Side: Media */}
+                {/* Right Side: Media — 3D Tilt */}
                 <motion.div
+                  ref={heroMediaRef}
                   initial={{ opacity: 0, scale: 0.9, x: 50 }}
                   whileInView={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ duration: 1, ease: "easeOut" }}
-                  className="relative aspect-[4/5] md:aspect-square w-full max-w-xl mx-auto"
+                  onMouseMove={handleHeroMouseMove}
+                  onMouseLeave={handleHeroMouseLeave}
+                  className="perspective-container relative aspect-[4/5] md:aspect-square w-full max-w-xl mx-auto"
                 >
                   <div className="absolute inset-0 bg-gold/10 blur-[80px] rounded-full opacity-30 animate-pulse" />
-                  <div className="relative w-full h-full rounded-2xl md:rounded-3xl overflow-hidden border border-gold/20 glow-gold-sm shadow-2xl">
+                  <div
+                    className="card-3d relative w-full h-full rounded-2xl md:rounded-3xl overflow-hidden border border-gold/20 glow-gold-md shadow-2xl"
+                    style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
+                  >
                     {banner.media_type === "video" ? (
-                      <video
-                        src={banner.media_url}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
+                      <video src={banner.media_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
                     ) : (
-                      <img
-                        src={banner.media_url}
-                        alt={banner.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={banner.media_url} alt={banner.title} className="w-full h-full object-cover" />
                     )}
-                    
-                    {/* Glassy overlay for depth */}
+                    {/* 3D depth overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent pointer-events-none" />
+                    {/* Corner accent */}
+                    <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-gold/30 rounded-tl-2xl pointer-events-none" />
+                    <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-gold/30 rounded-br-2xl pointer-events-none" />
                   </div>
                 </motion.div>
 

@@ -22,11 +22,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'PUT') {
     try {
       requireAuth(req);
-      const { total_claimed, claim_limit } = req.body;
+      const { total_claimed, claim_limit, floating_bubble_enabled, floating_bubble_text, floating_bubble_cta } = req.body;
       
       const updateData: any = {};
       if (total_claimed !== undefined) updateData.total_claimed = total_claimed;
       if (claim_limit !== undefined) updateData.claim_limit = claim_limit;
+      if (floating_bubble_enabled !== undefined) updateData.floating_bubble_enabled = floating_bubble_enabled;
+      if (floating_bubble_text !== undefined) updateData.floating_bubble_text = floating_bubble_text;
+      if (floating_bubble_cta !== undefined) updateData.floating_bubble_cta = floating_bubble_cta;
 
       const tracker = await OfferTracker.findOneAndUpdate(
         { id: 1 },
