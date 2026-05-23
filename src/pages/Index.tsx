@@ -11,6 +11,7 @@ import TrustSection from "@/components/TrustSection";
 import FAQSection from "@/components/FAQSection";
 import FinalCTA from "@/components/FinalCTA";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import PricingSection from "@/components/PricingSection";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import Cinematic3DSection from "@/components/Cinematic3DSection";
 
@@ -70,6 +71,7 @@ const Index = () => {
       <ProcessSection />
       <SamplesSection />
       <TestimonialsSection />
+      <PricingSection />
       <TrustSection />
       <FAQSection />
       <ContactForm />
