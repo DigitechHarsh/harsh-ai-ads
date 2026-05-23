@@ -10,7 +10,12 @@ const pricingPlans = [
     price: "₹999",
     description: "Best for testing and quick campaigns",
     icon: Zap,
-    features: ["AI cinematic video", "Script + Scene", "2 revisions"],
+    features: [
+      "1 AI Cinematic Video",
+      "Basic Script Writing",
+      "Standard 1080p Export",
+      "2 Revisions"
+    ],
     accentColor: "from-gold/20 to-amber-600/20",
     glowColor: "rgba(212,175,55,0.4)",
     borderColor: "rgba(212,175,55,0.3)",
@@ -22,7 +27,13 @@ const pricingPlans = [
     price: "₹1499",
     description: "Ideal for performance ads",
     icon: TrendingUp,
-    features: ["AI cinematic video", "Caption + Multiple Scenes", "2 revisions"],
+    features: [
+      "1 AI Cinematic Video",
+      "Engaging Script & Captions",
+      "4K Ultra HD Export",
+      "Premium BGM Track",
+      "2 Revisions"
+    ],
     accentColor: "from-purple-500/20 to-pink-500/20",
     glowColor: "rgba(168,85,247,0.4)",
     borderColor: "rgba(168,85,247,0.3)",
@@ -35,7 +46,13 @@ const pricingPlans = [
     price: "₹2099",
     description: "Built for scaling campaigns",
     icon: Rocket,
-    features: ["AI cinematic video", "Caption + Multiple Scenes", "2 revisions"],
+    features: [
+      "1 AI Cinematic Video",
+      "Advanced Storytelling",
+      "4K Ultra HD + Color Grading",
+      "Premium BGM + AI Voiceover",
+      "2 Revisions"
+    ],
     accentColor: "from-cyan-500/20 to-blue-500/20",
     glowColor: "rgba(6,182,212,0.4)",
     borderColor: "rgba(6,182,212,0.3)",
