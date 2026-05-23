@@ -1,220 +1,145 @@
-import React, { useEffect, useRef, useState } from 'react';
-
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
-  color: string;
-  baseX: number;
-  baseY: number;
-  life: number;
-  maxLife: number;
-  type: 'normal' | 'neon' | 'star';
-}
-
-const COLORS = [
-  'rgba(212, 175, 55,',   // gold
-  'rgba(139, 92, 246,',   // purple
-  'rgba(6, 182, 212,',    // cyan
-  'rgba(236, 72, 153,',   // pink
-  'rgba(255, 255, 255,',  // white
-];
+import React, { useEffect, useRef } from 'react';
 
 const ParticleBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: -9999, y: -9999 });
-  const particlesRef = useRef<Particle[]>([]);
   const animIdRef = useRef<number>(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // ── Reduced counts for performance ──
+    const MAX_PARTICLES = 60;
+    const CONNECTION_RADIUS = 80;
+    const REPEL_RADIUS = 90;
+
+    interface Particle {
+      x: number; y: number;
+      vx: number; vy: number;
+      size: number; opacity: number;
+      color: string;
+    }
+
+    // Only gold + one accent color (fewer draw calls)
+    const COLORS = ['rgba(212,175,55,', 'rgba(139,92,246,', 'rgba(6,182,212,'];
+
+    let particles: Particle[] = [];
+    let w = 0, h = 0;
+
+    const resize = () => {
+      w = canvas.width  = window.innerWidth;
+      h = canvas.height = window.innerHeight;
     };
 
-    const createParticle = (x?: number, y?: number): Particle => {
-      const colorBase = COLORS[Math.floor(Math.random() * COLORS.length)];
-      const type = Math.random() < 0.1 ? 'star' : Math.random() < 0.25 ? 'neon' : 'normal';
-      const px = x ?? Math.random() * canvas.width;
-      const py = y ?? Math.random() * canvas.height;
-      return {
-        x: px, y: py, baseX: px, baseY: py,
-        size: type === 'star' ? Math.random() * 3 + 1 : Math.random() * 1.8 + 0.3,
-        speedX: (Math.random() - 0.5) * 0.4,
-        speedY: (Math.random() - 0.5) * 0.4,
-        opacity: Math.random() * 0.7 + 0.1,
-        color: colorBase,
-        life: 0,
-        maxLife: Math.random() * 300 + 200,
-        type,
-      };
-    };
+    const makeParticle = (): Particle => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: Math.random() * 1.5 + 0.5,
+      opacity: Math.random() * 0.5 + 0.15,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    });
 
     const init = () => {
-      const count = Math.min(Math.floor((canvas.width * canvas.height) / 10000), 120);
-      particlesRef.current = Array.from({ length: count }, () => createParticle());
+      particles = Array.from({ length: MAX_PARTICLES }, makeParticle);
     };
 
-    const drawStar = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string, opacity: number) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.fillStyle = `${color}${opacity})`;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = `${color}0.8)`;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, -size * 2);
-        ctx.lineTo(size * 0.4, -size * 0.4);
-        ctx.lineTo(size * 2, 0);
-        ctx.lineTo(size * 0.4, size * 0.4);
-        ctx.lineTo(0, size * 2);
-        ctx.lineTo(-size * 0.4, size * 0.4);
-        ctx.lineTo(-size * 2, 0);
-        ctx.lineTo(-size * 0.4, -size * 0.4);
-        ctx.closePath();
-        ctx.fill();
-        ctx.rotate(Math.PI / 4);
-      }
-      ctx.restore();
-    };
-
+    // Throttle connection drawing — only check every other pair
+    let frameCount = 0;
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, w, h);
+      frameCount++;
 
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
-      const repelRadius = 120;
-      const attractRadius = 200;
-      const connectionRadius = 100;
 
-      const particles = particlesRef.current;
-
-      // Draw constellation lines
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < connectionRadius) {
-            const alpha = (1 - dist / connectionRadius) * 0.25;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            // Mix colors
-            const c1 = particles[i].color;
-            ctx.strokeStyle = `${c1}${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+      // ── Draw connections (batched, single path per color) ──
+      // Only draw on even frames to halve the cost
+      if (frameCount % 2 === 0) {
+        ctx.lineWidth = 0.4;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            // Quick bounding-box reject before sqrt
+            if (Math.abs(dx) > CONNECTION_RADIUS || Math.abs(dy) > CONNECTION_RADIUS) continue;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < CONNECTION_RADIUS) {
+              const alpha = (1 - dist / CONNECTION_RADIUS) * 0.18;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `${particles[i].color}${alpha})`;
+              ctx.stroke();
+            }
           }
         }
       }
 
-      // Update & draw particles
+      // ── Update & draw particles ──
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.life++;
-        if (p.life > p.maxLife) {
-          particles[i] = createParticle();
-          continue;
-        }
 
-        // Mouse repel/attract interaction
+        // Mouse repel (only if close)
         const dxm = p.x - mx;
         const dym = p.y - my;
-        const distM = Math.sqrt(dxm * dxm + dym * dym);
-
-        if (distM < repelRadius) {
-          // Repel
-          const force = (repelRadius - distM) / repelRadius;
-          p.x += (dxm / distM) * force * 5;
-          p.y += (dym / distM) * force * 5;
-        } else if (distM < attractRadius) {
-          // Gentle attract
-          const force = ((attractRadius - distM) / attractRadius) * 0.3;
-          p.x -= (dxm / distM) * force;
-          p.y -= (dym / distM) * force;
+        if (Math.abs(dxm) < REPEL_RADIUS && Math.abs(dym) < REPEL_RADIUS) {
+          const distM = Math.sqrt(dxm * dxm + dym * dym);
+          if (distM < REPEL_RADIUS && distM > 0) {
+            const force = (REPEL_RADIUS - distM) / REPEL_RADIUS;
+            p.vx += (dxm / distM) * force * 0.6;
+            p.vy += (dym / distM) * force * 0.6;
+          }
         }
 
-        // Natural drift
-        p.x += p.speedX;
-        p.y += p.speedY;
+        // Dampen velocity to prevent runaway
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+        p.x += p.vx;
+        p.y += p.vy;
 
         // Wrap edges
-        if (p.x > canvas.width + 10) p.x = -10;
-        else if (p.x < -10) p.x = canvas.width + 10;
-        if (p.y > canvas.height + 10) p.y = -10;
-        else if (p.y < -10) p.y = canvas.height + 10;
+        if (p.x > w + 5) p.x = -5;
+        else if (p.x < -5) p.x = w + 5;
+        if (p.y > h + 5) p.y = -5;
+        else if (p.y < -5) p.y = h + 5;
 
-        // Life-based opacity
-        const lifeFrac = p.life / p.maxLife;
-        const fadeIn = Math.min(lifeFrac * 5, 1);
-        const fadeOut = lifeFrac > 0.8 ? (1 - lifeFrac) / 0.2 : 1;
-        const finalOpacity = p.opacity * fadeIn * fadeOut;
-
-        if (p.type === 'star') {
-          drawStar(ctx, p.x, p.y, p.size * 0.5, p.color, finalOpacity);
-        } else if (p.type === 'neon') {
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = `${p.color}0.8)`;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = `${p.color}${finalOpacity})`;
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        } else {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = `${p.color}${finalOpacity})`;
-          ctx.fill();
-        }
+        // Draw simple dot — no shadow (shadow is very expensive)
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${p.opacity})`;
+        ctx.fill();
       }
 
       animIdRef.current = requestAnimationFrame(animate);
     };
 
+    // Throttle mousemove with RAF flag
+    let ticking = false;
     const onMouseMove = (e: MouseEvent) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-    };
-    const onMouseLeave = () => {
-      mouseRef.current = { x: -9999, y: -9999 };
-    };
-
-    // Click burst
-    const onClick = (e: MouseEvent) => {
-      for (let i = 0; i < 8; i++) {
-        const angle = (i / 8) * Math.PI * 2;
-        const speed = Math.random() * 3 + 1;
-        const p = createParticle(e.clientX, e.clientY);
-        p.speedX = Math.cos(angle) * speed;
-        p.speedY = Math.sin(angle) * speed;
-        p.size = Math.random() * 3 + 1;
-        p.maxLife = 80;
-        p.type = 'neon';
-        particlesRef.current.push(p);
+      if (!ticking) {
+        mouseRef.current = { x: e.clientX, y: e.clientY };
+        ticking = true;
+        requestAnimationFrame(() => { ticking = false; });
       }
     };
+    const onMouseLeave = () => { mouseRef.current = { x: -9999, y: -9999 }; };
 
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('mouseleave', onMouseLeave);
-    canvas.addEventListener('click', onClick);
-    window.addEventListener('resize', () => { resizeCanvas(); init(); });
+    window.addEventListener('resize', () => { resize(); init(); });
 
-    resizeCanvas();
+    resize();
     init();
     animate();
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseleave', onMouseLeave);
-      canvas.removeEventListener('click', onClick);
       cancelAnimationFrame(animIdRef.current);
     };
   }, []);
@@ -223,7 +148,7 @@ const ParticleBackground = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.75 }}
+      style={{ opacity: 0.65 }}
     />
   );
 };

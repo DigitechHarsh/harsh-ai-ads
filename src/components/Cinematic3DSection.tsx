@@ -1,11 +1,12 @@
-import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 const Cinematic3DSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -32,15 +33,16 @@ const Cinematic3DSection = () => {
     const rect = cardRef.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    setMousePos({
-      x: ((e.clientX - cx) / (rect.width / 2)) * 12,
-      y: -((e.clientY - cy) / (rect.height / 2)) * 8,
-    });
+    mouseX.set(((e.clientX - cx) / (rect.width / 2)) * 12);
+    mouseY.set(-((e.clientY - cy) / (rect.height / 2)) * 8);
   };
-  const handleMouseLeave = () => setMousePos({ x: 0, y: 0 });
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
-  const springMouseX = useSpring(mousePos.x, { stiffness: 200, damping: 25 });
-  const springMouseY = useSpring(mousePos.y, { stiffness: 200, damping: 25 });
+  const springMouseX = useSpring(mouseX, { stiffness: 200, damping: 25 });
+  const springMouseY = useSpring(mouseY, { stiffness: 200, damping: 25 });
 
   const adTypes = ["CGI", "UGC", "Cinematic"];
 
@@ -145,9 +147,9 @@ const Cinematic3DSection = () => {
               <div className="absolute inset-8 bg-gold/20 blur-3xl rounded-3xl" />
 
               {/* Main card */}
-              <div
+              <motion.div
                 className="card-3d relative w-full h-full rounded-[2rem] overflow-hidden border border-gold/30 glow-gold-md bg-background"
-                style={{ transform: `rotateX(${springMouseY}deg) rotateY(${springMouseX}deg)` }}
+                style={{ rotateX: springMouseY, rotateY: springMouseX }}
               >
                 {/* Animated gradient background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-gold/5" />
@@ -215,7 +217,7 @@ const Cinematic3DSection = () => {
                 {/* Corner accents */}
                 <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-gold/40 rounded-tl-[2rem] pointer-events-none" />
                 <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-gold/40 rounded-br-[2rem] pointer-events-none" />
-              </div>
+              </motion.div>
             </motion.div>
           </div>
 

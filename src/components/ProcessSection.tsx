@@ -39,7 +39,6 @@ const steps = [
 ];
 
 const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => {
-  const [hovered, setHovered] = useState(false);
   const IconComponent = step.icon;
 
   return (
@@ -49,8 +48,8 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.9, delay: index * 0.2, ease: [0.16, 1, 0.3, 1] }}
       className="relative z-10 text-center group perspective-near"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      whileHover="hover"
+      initial="initial"
     >
       {/* Step number — big watermark */}
       <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[80px] font-black text-white/[0.02] font-display select-none pointer-events-none leading-none">
@@ -61,12 +60,12 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
       <motion.div
         className="relative inline-flex items-center justify-center w-9 h-9 rounded-full border mb-6 mx-auto"
         style={{ borderColor: step.borderColor, backgroundColor: step.bgColor }}
-        animate={hovered ? { scale: [1, 1.2, 1] } : {}}
+        variants={{ hover: { scale: [1, 1.2, 1] } }}
         transition={{ duration: 0.4 }}
       >
         <motion.div
           className="absolute inset-0 rounded-full"
-          animate={hovered ? { boxShadow: `0 0 0 8px ${step.glowColor.replace('0.4', '0.1')}` } : {}}
+          variants={{ hover: { boxShadow: `0 0 0 8px ${step.glowColor.replace('0.4', '0.1')}` } }}
         />
         <span className="text-xs font-black" style={{ color: step.glowColor.replace('0.4', '0.9') }}>
           {index + 1}
@@ -87,13 +86,13 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
         {/* Glow */}
         <motion.div
           className="absolute inset-0 rounded-3xl"
-          animate={hovered ? { boxShadow: `0 0 40px ${step.glowColor}, 0 0 80px ${step.glowColor.replace('0.4', '0.15')}` } : { boxShadow: "none" }}
+          variants={{ hover: { boxShadow: `0 0 40px ${step.glowColor}, 0 0 80px ${step.glowColor.replace('0.4', '0.15')}` }, initial: { boxShadow: "none" } }}
           transition={{ duration: 0.3 }}
         />
 
         {/* Icon */}
         <motion.div
-          animate={hovered ? { rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] } : {}}
+          variants={{ hover: { rotate: [0, -10, 10, 0], scale: [1, 1.2, 1] } }}
           transition={{ duration: 0.5 }}
         >
           <IconComponent className="w-10 h-10" style={{ color: step.glowColor.replace('0.4', '1') }} />

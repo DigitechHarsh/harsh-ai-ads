@@ -35,7 +35,6 @@ const services = [
 
 const ServiceCard = ({ service, index }: { service: typeof services[0]; index: number }) => {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -54,7 +53,6 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
-    setIsHovered(false);
   };
 
   const IconComponent = service.icon;
@@ -71,7 +69,8 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        onMouseEnter={() => setIsHovered(true)}
+        whileHover="hover"
+        initial="initial"
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
         className="relative group cursor-default card-depth holographic gradient-border border-trace-wrap"
       >
@@ -92,7 +91,7 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
           {/* 4K Badge */}
           <motion.div
             className="absolute top-8 right-8"
-            animate={isHovered ? { scale: [1, 1.1, 1], rotate: [0, -3, 3, 0] } : {}}
+            variants={{ hover: { scale: [1, 1.1, 1], rotate: [0, -3, 3, 0] } }}
             transition={{ duration: 0.5 }}
           >
             <div className="relative">
@@ -107,14 +106,14 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
             {/* Icon with 3D pop */}
             <motion.div
               className={`mb-8 p-5 bg-gradient-to-br ${service.accentColor} border border-white/10 rounded-2xl w-fit relative`}
-              animate={isHovered ? { rotateY: [0, 15, -15, 0], scale: 1.1 } : { rotateY: 0, scale: 1 }}
+              variants={{ hover: { rotateY: [0, 15, -15, 0], scale: 1.1 }, initial: { rotateY: 0, scale: 1 } }}
               transition={{ duration: 0.6, ease: "easeOut" }}
               style={{ transformStyle: "preserve-3d" }}
             >
               <IconComponent className="w-9 h-9 text-gold" />
               <motion.div
                 className="absolute inset-0 rounded-2xl"
-                animate={isHovered ? { boxShadow: `0 0 30px ${service.glowColor}` } : { boxShadow: "none" }}
+                variants={{ hover: { boxShadow: `0 0 30px ${service.glowColor}` }, initial: { boxShadow: "none" } }}
               />
             </motion.div>
 

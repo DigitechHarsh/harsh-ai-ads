@@ -128,14 +128,15 @@
 .aurora-bg {
   background: linear-gradient(
     -45deg,
-    rgba(212,175,55,0.08),
-    rgba(139,92,246,0.06),
-    rgba(6,182,212,0.06),
-    rgba(212,175,55,0.05),
-    rgba(236,72,153,0.04)
+    rgba(212,175,55,0.06),
+    rgba(139,92,246,0.04),
+    rgba(6,182,212,0.04),
+    rgba(212,175,55,0.04),
+    rgba(236,72,153,0.03)
   );
-  background-size: 400% 400%;
-  animation: aurora-shift 12s ease infinite;
+  background-size: 300% 300%;
+  animation: aurora-shift 20s linear infinite; /* slower, linear */
+  transform: translateZ(0); /* hardware accel */
 }
 
 /* ─── Text Shimmer ─── */
@@ -186,11 +187,12 @@
     transparent 68%
   );
   background-size: 300% 300%;
-  animation: holo-shift 4s ease infinite;
+  animation: holo-shift 8s linear infinite;
   pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 0.4s ease;
+  transform: translateZ(0);
 }
 .holographic:hover::before {
   opacity: 1;
@@ -198,17 +200,13 @@
 
 /* ─── Glassmorphism ─── */
 .glassmorphism {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.04);
+  /* backdrop-filter removed for performance on lower end GPUs */
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .glassmorphism-gold {
-  background: rgba(212, 175, 55, 0.04);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.15);
   box-shadow: 0 8px 32px rgba(212, 175, 55, 0.08), inset 0 1px 0 rgba(212,175,55,0.06);
 }
 
