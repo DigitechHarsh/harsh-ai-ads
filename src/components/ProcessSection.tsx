@@ -49,7 +49,6 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
       transition={{ duration: 0.9, delay: index * 0.2, ease: [0.16, 1, 0.3, 1] }}
       className="relative z-10 text-center group perspective-near"
       whileHover="hover"
-      initial="initial"
     >
       {/* Step number — big watermark */}
       <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[80px] font-black text-white/[0.02] font-display select-none pointer-events-none leading-none">
@@ -98,32 +97,12 @@ const StepCard = ({ step, index }: { step: typeof steps[0]; index: number }) => 
           <IconComponent className="w-10 h-10" style={{ color: step.glowColor.replace('0.4', '1') }} />
         </motion.div>
 
-        {/* Particle burst on hover */}
-        {hovered && (
-          <>
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full"
-                style={{ backgroundColor: step.glowColor.replace('0.4', '0.8') }}
-                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                animate={{
-                  x: Math.cos((i / 6) * Math.PI * 2) * 50,
-                  y: Math.sin((i / 6) * Math.PI * 2) * 50,
-                  opacity: 0,
-                  scale: 0,
-                }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              />
-            ))}
-          </>
-        )}
       </motion.div>
 
       {/* Text */}
       <motion.h3
         className="text-xl font-bold mb-4 transition-colors"
-        style={hovered ? { color: step.glowColor.replace('0.4', '1') } : {}}
+        variants={{ hover: { color: step.glowColor.replace('0.4', '1') }, initial: { color: "var(--foreground)" } }}
       >
         {step.title}
       </motion.h3>
