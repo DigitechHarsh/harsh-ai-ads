@@ -14,7 +14,9 @@ const pricingPlans = [
       "1 AI Cinematic Video",
       "Basic Script Writing",
       "Standard 1080p Export",
-      "2 Revisions"
+      "2 Revisions",
+      "WhatsApp Support",
+      "50% Advance Required"
     ],
     accentColor: "from-gold/20 to-amber-600/20",
     glowColor: "rgba(212,175,55,0.4)",
@@ -32,7 +34,9 @@ const pricingPlans = [
       "Engaging Script & Captions",
       "4K Ultra HD Export",
       "Premium BGM Track",
-      "2 Revisions"
+      "2 Revisions",
+      "WhatsApp Support",
+      "50% Advance Required"
     ],
     accentColor: "from-purple-500/20 to-pink-500/20",
     glowColor: "rgba(168,85,247,0.4)",
@@ -51,7 +55,9 @@ const pricingPlans = [
       "Advanced Storytelling",
       "4K Ultra HD + Color Grading",
       "Premium BGM + AI Voiceover",
-      "2 Revisions"
+      "2 Revisions",
+      "WhatsApp Support",
+      "50% Advance Required"
     ],
     accentColor: "from-cyan-500/20 to-blue-500/20",
     glowColor: "rgba(6,182,212,0.4)",
@@ -410,6 +416,18 @@ const PricingSection = () => {
                         <Check className="w-3 h-3 text-gold" />
                       </div>
                       <p className="text-lg text-foreground/90">Flexible plans based on your creative needs</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 text-gold" />
+                      </div>
+                      <p className="text-lg text-foreground/90">3 Revisions per video & Dedicated WhatsApp Support</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 text-gold" />
+                      </div>
+                      <p className="text-lg text-foreground/90 font-semibold text-gold-gradient">50% Advance Payment Required</p>
                     </div>
                   </div>
 
