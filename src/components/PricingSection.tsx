@@ -70,7 +70,7 @@ const monthlyPlans = [
   {
     price: "₹7999",
     duration: "150 seconds",
-    creatives: "Maximum 12 creatives",
+    creatives: "Maximum 10 creatives",
     delay: 0.1
   },
   {
