@@ -371,14 +371,14 @@ export default function AdminDashboard() {
     return res.json();
   };
 
-  const uploadToCloudinary = async (file: File) => {
+  const uploadToCloudinary = async (file: File, resourceType: "auto" | "raw" | "image" | "video" = "auto") => {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
     if (!cloudName || !uploadPreset) throw new Error("Cloudinary credentials missing");
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: "POST", body: formData });
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, { method: "POST", body: formData });
     if (!res.ok) throw new Error("Upload failed");
     const data = await res.json();
     return data.secure_url;
@@ -428,7 +428,7 @@ export default function AdminDashboard() {
     if (!resourceFile) return toast.error("Please provide a PDF file");
     setUploading(true);
     try {
-      const publicUrl = await uploadToCloudinary(resourceFile);
+      const publicUrl = await uploadToCloudinary(resourceFile, "raw");
 
       const token = localStorage.getItem("token");
       const res = await fetch("/api/resources", {
