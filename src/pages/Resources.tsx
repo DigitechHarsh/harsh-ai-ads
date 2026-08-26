@@ -68,7 +68,7 @@ export default function Resources() {
                 </div>
                 
                 <a href={r.file_url} target="_blank" rel="noreferrer" className="mt-4 block">
-                  <Button variant="default" className="w-full bg-gold text-black hover:bg-gold-dark font-bold group-hover:shadow-lg transition-all">
+                  <Button variant="default" className="w-full font-bold group-hover:shadow-lg transition-all">
                     <Download className="w-4 h-4 mr-2" /> View & Download
                   </Button>
                 </a>
