@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
+import formidable from 'formidable';
+import { v2 as cloudinary } from 'cloudinary';
 import { query } from './db.js';
 
 dotenv.config();
@@ -468,6 +470,65 @@ app.delete('/api/prompts', requireAuth, async (req, res) => {
   try {
     const { id } = req.query;
     await query('DELETE FROM reel_prompts WHERE id = ?', [id]);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// ==========================================
+// 📚 RESOURCES ROUTES
+// ==========================================
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+app.get('/api/resources', async (req, res) => {
+  try {
+    const resources = await query('SELECT * FROM resources ORDER BY created_at DESC');
+    return res.status(200).json(resources);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/resources', requireAuth, (req, res) => {
+  const form = formidable({ multiples: false });
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    try {
+      const title = Array.isArray(fields.title) ? fields.title[0] : fields.title;
+      if (!title) return res.status(400).json({ error: 'Title is required' });
+      
+      const file = Array.isArray(files.file) ? files.file[0] : files.file;
+      if (!file) return res.status(400).json({ error: 'PDF File is required' });
+
+      const result = await cloudinary.uploader.upload(file.filepath, {
+        resource_type: 'auto', 
+        folder: 'resources'
+      });
+      
+      const insertResult = await query(
+        'INSERT INTO resources (title, file_url) VALUES (?, ?)',
+        [title, result.secure_url]
+      );
+      
+      const newResource = { id: insertResult.insertId, title, file_url: result.secure_url };
+      return res.status(200).json(newResource);
+    } catch (uploadError) {
+      return res.status(500).json({ error: uploadError.message });
+    }
+  });
+});
+
+app.delete('/api/resources', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.query;
+    await query('DELETE FROM resources WHERE id = ?', [id]);
     return res.status(200).json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: error.message });

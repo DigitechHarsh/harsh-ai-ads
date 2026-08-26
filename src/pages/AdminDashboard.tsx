@@ -276,6 +276,11 @@ export default function AdminDashboard() {
   const [campaignUrl, setCampaignUrl] = useState("");
   const [promptFile, setPromptFile] = useState<File | null>(null);
 
+  // Resources
+  const [resources, setResources] = useState<any[]>([]);
+  const [resourceTitle, setResourceTitle] = useState("");
+  const [resourceFile, setResourceFile] = useState<File | null>(null);
+
   // Editing States
   const [editingSampleId, setEditingSampleId] = useState<string | null>(null);
   const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
@@ -396,6 +401,7 @@ export default function AdminDashboard() {
       fetchSamples();
       fetchOfferStats();
       fetchPrompts();
+      fetchResources();
     }
   }, [navigate]);
 
@@ -410,6 +416,45 @@ export default function AdminDashboard() {
 
   const fetchSamples = async () => {
     try { setSamples(await fetch("/api/portfolio").then(r => r.json())); } catch(e) {}
+  };
+
+  const fetchResources = async () => {
+    try { setResources(await fetch("/api/resources").then(r => r.json())); } catch(e) {}
+  };
+
+  const handleUploadResource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resourceTitle) return toast.error("Please provide a title");
+    if (!resourceFile) return toast.error("Please provide a PDF file");
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", resourceTitle);
+      formData.append("file", resourceFile);
+
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/resources", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to upload resource");
+      }
+
+      toast.success("Resource added!");
+      setResourceTitle("");
+      setResourceFile(null);
+      fetchResources();
+    } catch(e: any) { toast.error(e.message); }
+    setUploading(false);
+  };
+
+  const handleDeleteResource = async (id: string) => {
+    try { await authFetch(`/api/resources?id=${id}`, { method: "DELETE" }); toast.success("Resource deleted"); fetchResources(); }
+    catch(e: any) { toast.error(e.message); }
   };
 
   const fetchOfferStats = async () => {
@@ -677,6 +722,7 @@ export default function AdminDashboard() {
                   { value: "hero",        icon: <Zap className="w-4 h-4" />, label: "Offers & Banners" },
                   { value: "samples",     icon: <LayoutIcon className="w-4 h-4" />, label: "Portfolio" },
                   { value: "prompts",     icon: <Sparkles className="w-4 h-4" />, label: "Prompts" },
+                  { value: "resources",   icon: <StickyNote className="w-4 h-4" />, label: "Resources" },
                 ].map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value} className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all">
                     {tab.icon} {tab.label}
@@ -1062,6 +1108,82 @@ export default function AdminDashboard() {
                               </TableRow>
                             ))}
                             {filteredPrompts.length === 0 && <TableRow><TableCell colSpan={3} className="text-center py-20 text-muted-foreground italic">No prompts found.</TableCell></TableRow>}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+              {/* ── RESOURCES TAB ── */}
+              <TabsContent value="resources" className="mt-0 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  <div className="md:col-span-4">
+                    <Card className="shadow-sm border-border/50">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-display font-bold">Upload Resource</CardTitle>
+                        <CardDescription>Upload a PDF document.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <form onSubmit={handleUploadResource} className="space-y-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Title</label>
+                            <Input placeholder="e.g. Sales Presentation" value={resourceTitle} onChange={e => setResourceTitle(e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">PDF File</label>
+                            <Input type="file" accept=".pdf,application/pdf" onChange={e => setResourceFile(e.target.files?.[0] || null)} className="bg-secondary/30" />
+                          </div>
+                          <Button type="submit" className="w-full bg-gold hover:bg-gold-dark text-black font-bold" disabled={uploading}>
+                            {uploading ? "Uploading..." : "Publish Resource"}
+                          </Button>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div className="md:col-span-8">
+                    <Card className="shadow-sm border-border/50">
+                      <CardHeader className="flex flex-row items-center justify-between pb-6">
+                        <div>
+                          <CardTitle className="text-xl font-display font-bold">Resources</CardTitle>
+                          <CardDescription>Manage your uploaded PDFs.</CardDescription>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                              <TableHead>Title</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {resources.map(r => (
+                              <TableRow key={r.id} className="group">
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <StickyNote className="w-4 h-4 text-gold" />
+                                    <a href={r.file_url} target="_blank" rel="noreferrer" className="text-sm font-bold hover:underline">{r.title}</a>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-xs text-muted-foreground">
+                                  {new Date(r.created_at).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDeleteResource(r.id)}>
+                                      <Trash className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {resources.length === 0 && (
+                              <TableRow>
+                                <TableCell colSpan={3} className="text-center py-20 text-muted-foreground italic">No resources found.</TableCell>
+                              </TableRow>
+                            )}
                           </TableBody>
                         </Table>
                       </CardContent>
