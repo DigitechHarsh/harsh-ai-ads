@@ -428,15 +428,19 @@ export default function AdminDashboard() {
     if (!resourceFile) return toast.error("Please provide a PDF file");
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("title", resourceTitle);
-      formData.append("file", resourceFile);
+      const publicUrl = await uploadToCloudinary(resourceFile);
 
       const token = localStorage.getItem("token");
       const res = await fetch("/api/resources", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          title: resourceTitle,
+          file_url: publicUrl
+        }),
       });
 
       if (!res.ok) {
@@ -1134,7 +1138,7 @@ export default function AdminDashboard() {
                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">PDF File</label>
                             <Input type="file" accept=".pdf,application/pdf" onChange={e => setResourceFile(e.target.files?.[0] || null)} className="bg-secondary/30" />
                           </div>
-                          <Button type="submit" className="w-full bg-gold hover:bg-gold-dark text-black font-bold" disabled={uploading}>
+                          <Button type="submit" className="w-full font-bold" disabled={uploading}>
                             {uploading ? "Uploading..." : "Publish Resource"}
                           </Button>
                         </form>
