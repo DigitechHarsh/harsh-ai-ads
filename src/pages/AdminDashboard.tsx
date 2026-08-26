@@ -428,19 +428,15 @@ export default function AdminDashboard() {
     if (!resourceFile) return toast.error("Please provide a PDF file");
     setUploading(true);
     try {
-      const publicUrl = await uploadToCloudinary(resourceFile, "raw");
+      const formData = new FormData();
+      formData.append("title", resourceTitle);
+      formData.append("file", resourceFile);
 
       const token = localStorage.getItem("token");
       const res = await fetch("/api/resources", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({
-          title: resourceTitle,
-          file_url: publicUrl
-        }),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
 
       if (!res.ok) {

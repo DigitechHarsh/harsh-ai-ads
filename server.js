@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import formidable from 'formidable';
 import { v2 as cloudinary } from 'cloudinary';
 import { query } from './db.js';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -489,23 +490,43 @@ app.get('/api/resources', async (req, res) => {
   }
 });
 
-app.post('/api/resources', requireAuth, async (req, res) => {
-  try {
-    const { title, file_url } = req.body;
-    
-    if (!title) return res.status(400).json({ error: 'Title is required' });
-    if (!file_url) return res.status(400).json({ error: 'File URL is required' });
 
-    const insertResult = await query(
-      'INSERT INTO resources (title, file_url) VALUES (?, ?)',
-      [title, file_url]
-    );
-    
-    const newResource = { id: insertResult.insertId, title, file_url };
-    return res.status(200).json(newResource);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+
+app.post('/api/resources', requireAuth, (req, res) => {
+  const uploadDir = path.join(__dirname, 'uploads');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
   }
+  
+  const form = formidable({ 
+    multiples: false,
+    uploadDir: uploadDir,
+    keepExtensions: true
+  });
+  
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(500).json({ error: err.message });
+    
+    try {
+      const title = Array.isArray(fields.title) ? fields.title[0] : fields.title;
+      if (!title) return res.status(400).json({ error: 'Title is required' });
+      
+      const file = Array.isArray(files.file) ? files.file[0] : files.file;
+      if (!file) return res.status(400).json({ error: 'PDF File is required' });
+
+      const file_url = `/uploads/${path.basename(file.filepath)}`;
+
+      const insertResult = await query(
+        'INSERT INTO resources (title, file_url) VALUES (?, ?)',
+        [title, file_url]
+      );
+      
+      const newResource = { id: insertResult.insertId, title, file_url };
+      return res.status(200).json(newResource);
+    } catch (uploadError) {
+      return res.status(500).json({ error: uploadError.message });
+    }
+  });
 });
 
 app.delete('/api/resources', requireAuth, async (req, res) => {
@@ -521,8 +542,9 @@ app.delete('/api/resources', requireAuth, async (req, res) => {
 // ==========================================
 // 🌐 FRONTEND STATIC SERVING & SPA FALLBACK
 // ==========================================
-// Serve static assets from 'dist' folder
+// Serve static assets from 'dist' folder and 'uploads' folder
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Fallback all other GET requests to index.html (Client-Side routing)
 app.get('*', (req, res) => {
