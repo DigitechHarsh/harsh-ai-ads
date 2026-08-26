@@ -41,7 +41,7 @@ export default function PromptsLibrary() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24">
       <div className="p-4">
         {selectedCampaign ? (
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white" onClick={() => setSelectedCampaign(null)}>

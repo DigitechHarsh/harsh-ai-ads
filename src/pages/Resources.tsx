@@ -22,7 +22,7 @@ export default function Resources() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24">
       <div className="p-4">
         <Link to="/">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
