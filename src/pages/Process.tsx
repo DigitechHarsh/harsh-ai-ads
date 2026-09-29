@@ -1,12 +1,16 @@
-import { ArrowLeft, Film } from "lucide-react";
+import { ArrowLeft, GitFork, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import SamplesSection from "@/components/SamplesSection";
+import ProcessSection from "@/components/ProcessSection";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import ContactForm from "@/components/ContactForm";
 import FinalCTA from "@/components/FinalCTA";
 
-export default function Portfolio() {
+import beforeImg from "@/assets/before.png";
+import afterImg from "@/assets/after.png";
+
+export default function Process() {
   return (
     <main className="min-h-screen bg-background pt-24">
       <div className="p-4 max-w-7xl mx-auto">
@@ -19,17 +23,18 @@ export default function Portfolio() {
 
       <div className="pt-6 pb-12 px-6 max-w-5xl mx-auto text-center">
         <Badge variant="secondary" className="mb-4">
-          <Film className="w-4 h-4 mr-2 text-primary" /> Verified Client Results
+          <GitFork className="w-4 h-4 mr-2 text-primary" /> Seamless Execution
         </Badge>
         <h1 className="text-4xl md:text-6xl font-bold font-display uppercase tracking-wider mb-4">
-          Featured <span className="shimmer-text">Portfolio</span>
+          How It <span className="shimmer-text">Works</span>
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our viral AI video campaigns, CGI animations, and commercial product imagery that convert viewers into buyers.
+          From photo submission to cinematic render in 4 streamlined steps. Zero shooting equipment needed.
         </p>
       </div>
 
-      <SamplesSection />
+      <ProcessSection />
+      <BeforeAfterSlider beforeImage={beforeImg} afterImage={afterImg} />
       <ContactForm />
       <FinalCTA />
     </main>

@@ -1,12 +1,13 @@
-import { ArrowLeft, Film } from "lucide-react";
+import { ArrowLeft, Tag, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import SamplesSection from "@/components/SamplesSection";
+import PricingSection from "@/components/PricingSection";
+import TrustSection from "@/components/TrustSection";
 import ContactForm from "@/components/ContactForm";
 import FinalCTA from "@/components/FinalCTA";
 
-export default function Portfolio() {
+export default function Pricing() {
   return (
     <main className="min-h-screen bg-background pt-24">
       <div className="p-4 max-w-7xl mx-auto">
@@ -19,17 +20,18 @@ export default function Portfolio() {
 
       <div className="pt-6 pb-12 px-6 max-w-5xl mx-auto text-center">
         <Badge variant="secondary" className="mb-4">
-          <Film className="w-4 h-4 mr-2 text-primary" /> Verified Client Results
+          <Tag className="w-4 h-4 mr-2 text-primary" /> Transparent Packages
         </Badge>
         <h1 className="text-4xl md:text-6xl font-bold font-display uppercase tracking-wider mb-4">
-          Featured <span className="shimmer-text">Portfolio</span>
+          Simple, <span className="shimmer-text">High-ROI Pricing</span>
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our viral AI video campaigns, CGI animations, and commercial product imagery that convert viewers into buyers.
+          Hollywood-grade 3D cinematic AI video ads starting at just ₹999. Pick the ideal tier for your growth goals.
         </p>
       </div>
 
-      <SamplesSection />
+      <PricingSection />
+      <TrustSection />
       <ContactForm />
       <FinalCTA />
     </main>

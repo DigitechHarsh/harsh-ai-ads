@@ -5,14 +5,12 @@ import { Menu, X, Sparkles, Zap } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const navLinks = [
-  { name: "Home", path: "/", id: "" },
-  { name: "Services", path: "/#services", id: "services" },
-  { name: "Portfolio", path: "/#samples", id: "samples" },
-  { name: "Reviews", path: "/#reviews", id: "reviews" },
-  { name: "Pricing", path: "/#pricing", id: "pricing" },
-  { name: "Process", path: "/#process", id: "process" },
-  { name: "FAQs", path: "/#faq", id: "faq" },
-  { name: "Resources", path: "/resources", id: "resources" },
+  { name: "Home", path: "/" },
+  { name: "Services", path: "/services" },
+  { name: "Portfolio", path: "/portfolio" },
+  { name: "Pricing", path: "/pricing" },
+  { name: "Process", path: "/process" },
+  { name: "Resources", path: "/resources" },
 ];
 
 const Navbar = () => {
@@ -33,8 +31,22 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Update active index based on route location
+  useEffect(() => {
+    const currentIdx = navLinks.findIndex(l => l.path === location.pathname);
+    if (currentIdx !== -1) {
+      setActiveIdx(currentIdx);
+    } else {
+      setActiveIdx(-1);
+    }
+  }, [location.pathname]);
+
   // Update pill position when active changes
   useEffect(() => {
+    if (activeIdx === -1) {
+      setPillStyle({ left: 0, width: 0 });
+      return;
+    }
     const el = linkRefs.current[activeIdx];
     if (el && navRef.current) {
       const navRect = navRef.current.getBoundingClientRect();
@@ -44,16 +56,7 @@ const Navbar = () => {
         width: elRect.width,
       });
     }
-  }, [activeIdx]);
-
-  const handleLinkClick = (e: React.MouseEvent, link: typeof navLinks[0], index: number) => {
-    setActiveIdx(index);
-    if (link.path.startsWith('/#') && location.pathname === '/') {
-      e.preventDefault();
-      const targetId = link.path.substring(2);
-      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  }, [activeIdx, location.pathname]);
 
   return (
     <nav
@@ -89,38 +92,31 @@ const Navbar = () => {
         {/* Desktop Nav with sliding pill */}
         <div ref={navRef} className="hidden md:flex items-center gap-1 relative">
           {/* Sliding pill indicator */}
-          <motion.div
-            className="absolute h-8 rounded-full bg-gold/10 border border-gold/20 pointer-events-none"
-            animate={{ left: pillStyle.left, width: pillStyle.width }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-          />
+          {activeIdx !== -1 && (
+            <motion.div
+              className="absolute h-8 rounded-full bg-gold/10 border border-gold/20 pointer-events-none"
+              animate={{ left: pillStyle.left, width: pillStyle.width }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            />
+          )}
 
           {navLinks.map((link, index) => (
-            <a
+            <Link
               key={link.name}
               ref={el => { linkRefs.current[index] = el; }}
-              href={link.path}
-              onClick={(e) => handleLinkClick(e, link, index)}
+              to={link.path}
               className={`relative z-10 text-xs font-medium uppercase tracking-widest px-4 py-2 rounded-full transition-colors duration-300 ${
                 activeIdx === index ? "text-gold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {link.name}
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* CTA Button */}
         <div className="hidden md:block">
-          <a
-            href="/#form"
-            onClick={(e) => {
-              if (location.pathname === '/') {
-                e.preventDefault();
-                document.getElementById('form')?.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-          >
+          <Link to="/#form">
             <motion.button
               whileHover={{ scale: 1.05, y: -1 }}
               whileTap={{ scale: 0.95 }}
@@ -138,7 +134,7 @@ const Navbar = () => {
                 Get Started
               </span>
             </motion.button>
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Toggle */}
@@ -173,40 +169,29 @@ const Navbar = () => {
           >
             <div className="flex flex-col p-6 gap-2">
               {navLinks.map((link, index) => (
-                <motion.a
+                <Link
                   key={link.name}
-                  href={link.path}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.06 }}
-                  onClick={(e) => {
-                    setIsOpen(false);
-                    handleLinkClick(e, link, index);
-                  }}
-                  className="text-base font-bold uppercase tracking-widest text-muted-foreground hover:text-gold transition-colors py-2 px-4 rounded-xl hover:bg-gold/5"
+                  to={link.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`text-base font-bold uppercase tracking-widest py-2 px-4 rounded-xl transition-colors ${
+                    activeIdx === index 
+                      ? "text-gold bg-gold/10" 
+                      : "text-muted-foreground hover:text-gold hover:bg-gold/5"
+                  }`}
                 >
                   {link.name}
-                </motion.a>
+                </Link>
               ))}
-              <motion.a
-                href="/#form"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                onClick={(e) => {
-                  setIsOpen(false);
-                  if (location.pathname === '/') {
-                    e.preventDefault();
-                    document.getElementById('form')?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
+              <Link
+                to="/#form"
+                onClick={() => setIsOpen(false)}
                 className="mt-3"
               >
                 <button className="w-full bg-gold-gradient text-primary-foreground text-sm font-bold px-6 py-3.5 rounded-2xl uppercase tracking-widest flex items-center justify-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   Get Started
                 </button>
-              </motion.a>
+              </Link>
             </div>
           </motion.div>
         )}
