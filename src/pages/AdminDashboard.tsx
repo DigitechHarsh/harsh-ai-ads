@@ -99,15 +99,14 @@ const AnalyticsTab = ({ leads, offerStats, samples, prompts }: any) => {
     { label: "Last Week",       value: lastWeek,       icon: <BarChart3 className="w-5 h-5" />,    color: "text-purple-400", bg: "bg-purple-500/10" },
     { label: "Offer Claims",    value: claimed,        icon: <Zap className="w-5 h-5" />,          color: "text-gold",       bg: "bg-gold/10" },
     { label: "Portfolio Items", value: samples.length, icon: <LayoutIcon className="w-5 h-5" />,   color: "text-cyan-400",   bg: "bg-cyan-500/10" },
-    { label: "Prompts Saved",   value: prompts.length, icon: <Sparkles className="w-5 h-5" />,     color: "text-pink-400",   bg: "bg-pink-500/10" },
   ];
 
-  const COLORS = ["bg-gold", "bg-purple-400", "bg-cyan-400", "bg-pink-400", "bg-green-400", "bg-orange-400"];
+  const COLORS = ["bg-gold", "bg-purple-400", "bg-cyan-400", "bg-pink-400", "bg-green-400"];
 
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {statCards.map((s, i) => (
           <Card key={i} className="bg-secondary/10 border-border/50">
             <CardContent className="p-4">
@@ -674,7 +673,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <Card className="bg-secondary/10 border-border/50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -708,17 +707,6 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-secondary/10 border-border/50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/10 text-purple-500 rounded-xl"><Sparkles className="w-6 h-6" /></div>
-                <div>
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Prompts</p>
-                  <h3 className="text-2xl font-bold">{prompts.length}</h3>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <Tabs defaultValue="submissions" className="w-full">
@@ -731,7 +719,6 @@ export default function AdminDashboard() {
                   { value: "analytics",   icon: <BarChart3 className="w-4 h-4" />, label: "Analytics" },
                   { value: "hero",        icon: <Zap className="w-4 h-4" />, label: "Offers & Banners" },
                   { value: "samples",     icon: <LayoutIcon className="w-4 h-4" />, label: "Portfolio" },
-                  { value: "prompts",     icon: <Sparkles className="w-4 h-4" />, label: "Prompts" },
                   { value: "resources",   icon: <StickyNote className="w-4 h-4" />, label: "Resources" },
                 ].map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value} className="w-full justify-start gap-3 py-3 px-4 data-[state=active]:bg-gold/10 data-[state=active]:text-gold transition-all">
@@ -1180,54 +1167,6 @@ export default function AdminDashboard() {
                 </div>
               </TabsContent>
 
-              {/* ── PROMPTS TAB ── */}
-              <TabsContent value="prompts" className="mt-0 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  <div className="md:col-span-4">
-                    <Card className="shadow-sm">
-                      <CardHeader><CardTitle className="text-xl font-display font-bold">Prompt Builder</CardTitle><CardDescription>Save creative AI prompts.</CardDescription></CardHeader>
-                      <CardContent>
-                        <form onSubmit={handleSavePrompt} className="space-y-4">
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Title</label><Input placeholder="e.g. Cinematic Watch" value={promptForm.title} onChange={e => setPromptForm({...promptForm, title: e.target.value})} /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Brand</label><Input placeholder="e.g. Rolex" value={promptForm.brand} onChange={e => setPromptForm({...promptForm, brand: e.target.value})} /></div>
-                          <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Cover Preview</label><Input type="file" onChange={e => setPromptFile(e.target.files?.[0] || null)} className="bg-secondary/30" /></div>
-                          <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Image Prompt</label><textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30" placeholder="Enter detailed prompt..." value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} /></div>
-                          <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Video Prompt</label><textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30" placeholder="Enter video motion prompt..." value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} /></div>
-                          <Button type="submit" className="w-full bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-10" disabled={uploading}>{uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save to Library")}</Button>
-                          {editingPromptId && <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingPromptId(null); setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true }); }}>Cancel Edit</Button>}
-                        </form>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div className="md:col-span-8">
-                    <Card className="shadow-sm">
-                      <CardHeader className="flex flex-row items-center justify-between pb-6">
-                        <div><CardTitle className="text-xl font-display font-bold">Prompts Library</CardTitle><CardDescription>Your saved AI ad concepts.</CardDescription></div>
-                        <div className="relative w-48"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" /><Input placeholder="Search library..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8 text-xs bg-secondary/50 border-none" /></div>
-                      </CardHeader>
-                      <CardContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                              <TableHead>Preview</TableHead><TableHead>Brand & Title</TableHead><TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {filteredPrompts.map(p => (
-                              <TableRow key={p.id} className="group">
-                                <TableCell><div className="w-16 h-16 rounded-xl overflow-hidden border border-border/50 bg-secondary/20">{p.media_url ? <img src={p.media_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" /> : <div className="w-full h-full flex items-center justify-center text-[8px] text-muted-foreground uppercase font-bold italic px-2 text-center">No Preview</div>}</div></TableCell>
-                                <TableCell><div className="text-sm font-bold">{p.title}</div><div className="text-[10px] text-muted-foreground uppercase font-bold tracking-[0.1em] mt-1">{p.brand}</div></TableCell>
-                                <TableCell className="text-right"><div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleEditPrompt(p)}><Settings2 className="w-4 h-4 text-muted-foreground" /></Button><Button variant="outline" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDeletePrompt(p.id)}><Trash className="w-4 h-4" /></Button></div></TableCell>
-                              </TableRow>
-                            ))}
-                            {filteredPrompts.length === 0 && <TableRow><TableCell colSpan={3} className="text-center py-20 text-muted-foreground italic">No prompts found.</TableCell></TableRow>}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </TabsContent>
               {/* ── RESOURCES TAB ── */}
               <TabsContent value="resources" className="mt-0 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
