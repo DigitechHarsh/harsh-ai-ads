@@ -5,7 +5,7 @@ import ProblemSection from "@/components/ProblemSection";
 import SolutionSection from "@/components/SolutionSection";
 import ServicesSection from "@/components/ServicesSection";
 import ProcessSection from "@/components/ProcessSection";
-import SamplesSection from "@/components/SamplesSection";
+import PortfolioShowcasePreview from "@/components/PortfolioShowcasePreview";
 import ContactForm from "@/components/ContactForm";
 import TrustSection from "@/components/TrustSection";
 import FAQSection from "@/components/FAQSection";
@@ -67,7 +67,7 @@ const Index = () => {
       <BeforeAfterSlider beforeImage={beforeImg} afterImage={afterImg} />
       <ServicesSection />
       <ProcessSection />
-      <SamplesSection />
+      <PortfolioShowcasePreview />
       <TestimonialsSection />
       <PricingSection />
       <TrustSection />
