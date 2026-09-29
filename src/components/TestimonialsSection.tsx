@@ -139,7 +139,7 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <section id="reviews" className="py-10 md:py-14 px-4 sm:px-6 bg-background relative overflow-hidden">
+    <section id="reviews" className="py-10 md:py-14 px-4 sm:px-6 bg-transparent relative overflow-hidden">
       {/* Ambient bg */}
       <div className="absolute inset-0 aurora-bg opacity-30 pointer-events-none" />
       <motion.div

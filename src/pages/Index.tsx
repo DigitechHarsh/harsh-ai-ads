@@ -60,7 +60,7 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <main className="min-h-screen bg-background relative">
+    <main className="min-h-screen bg-transparent relative">
       <div id="home" className="absolute top-0 w-full h-10 pointer-events-none" />
       <HeroSection />
       <ProblemSection />

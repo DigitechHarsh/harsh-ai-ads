@@ -24,7 +24,7 @@ const testimonials = [
 
 const ReviewsSection = () => {
   return (
-    <section id="reviews" className="py-20 bg-background relative overflow-hidden">
+    <section id="reviews" className="py-20 bg-transparent relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none opacity-20">
          <div className="absolute top-0 left-0 w-64 h-64 bg-gold/10 rounded-full blur-[100px]" />

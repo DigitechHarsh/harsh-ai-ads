@@ -8,7 +8,7 @@ import FinalCTA from "@/components/FinalCTA";
 
 export default function Portfolio() {
   return (
-    <main className="min-h-screen bg-background pt-16 md:pt-20">
+    <main className="min-h-screen bg-transparent pt-16 md:pt-20">
       <div className="px-4 sm:px-6 pt-2 max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/">
           <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs">

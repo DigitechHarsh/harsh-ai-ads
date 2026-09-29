@@ -156,7 +156,7 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
 
 const ServicesSection = () => {
   return (
-    <section id="services" className="py-10 md:py-14 bg-background relative overflow-hidden">
+    <section id="services" className="py-10 md:py-14 bg-transparent relative overflow-hidden">
       {/* Aurora ambient background */}
       <div className="absolute inset-0 aurora-bg opacity-50 pointer-events-none" />
 

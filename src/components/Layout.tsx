@@ -15,7 +15,7 @@ const Layout = ({ children }: LayoutProps) => {
   const isAdmin = location.pathname.startsWith("/admin") || location.pathname === "/login";
 
   return (
-    <div className="flex flex-col min-h-screen bg-background relative selection:bg-gold/30 selection:text-white">
+    <div className="flex flex-col min-h-screen bg-transparent relative selection:bg-gold/30 selection:text-white">
       {/* Cinematic Ambient Particles & Glow Effect */}
       <ParticlesBackground />
 
