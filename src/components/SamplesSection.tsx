@@ -81,7 +81,7 @@ const SamplesSection = () => {
         <Tabs 
           value={getActiveTab()} 
           onValueChange={handleTabChange}
-          className="w-full max-w-4xl mx-auto"
+          className="w-full max-w-7xl mx-auto"
         >
           <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8 bg-secondary border border-border">
             <TabsTrigger value="videos">AI Videos</TabsTrigger>
@@ -90,7 +90,7 @@ const SamplesSection = () => {
           </TabsList>
 
           <TabsContent value="videos">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {samples.filter(s => s.media_type === "video").length === 0 ? (
                 <div className="col-span-full text-center text-muted-foreground py-12">No AI Videos yet.</div>
               ) : (
@@ -119,7 +119,7 @@ const SamplesSection = () => {
           </TabsContent>
 
           <TabsContent value="images">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {samples.filter(s => s.media_type === "image").length === 0 ? (
                 <div className="col-span-full text-center text-muted-foreground py-12">No AI Images yet.</div>
               ) : (
@@ -147,7 +147,7 @@ const SamplesSection = () => {
           </TabsContent>
 
           <TabsContent value="teasers">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {samples.filter(s => s.media_type === "teaser").length === 0 ? (
                 <div className="col-span-full text-center text-muted-foreground py-12">No AI Film Teasers yet.</div>
               ) : (
