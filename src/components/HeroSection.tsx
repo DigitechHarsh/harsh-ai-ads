@@ -236,7 +236,7 @@ const HeroSection = () => {
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.5, duration: 0.6 }}
                     >
-                      {[{ val: "4K", label: "Ultra HD" }, { val: "24-48 hrs", label: "Fast Delivery" }, { val: "₹399", label: "Special Deal" }].map((s, i) => (
+                      {[{ val: "4K", label: "Ultra HD" }].map((s, i) => (
                         <div key={i} className="text-left">
                           <div className="text-base sm:text-lg font-black text-gold-gradient font-display">{s.val}</div>
                           <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</div>
