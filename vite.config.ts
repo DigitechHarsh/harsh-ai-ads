@@ -18,19 +18,30 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
   build: {
+    target: "esnext",
+    minify: "esbuild",
+    cssCodeSplit: true,
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, "index.html"),
-        about: path.resolve(__dirname, "about/index.html"),
-        contact: path.resolve(__dirname, "contact/index.html"),
-        portfolio: path.resolve(__dirname, "portfolio/index.html"),
-        prompts: path.resolve(__dirname, "prompts/index.html"),
-        resources: path.resolve(__dirname, "resources/index.html"),
-        login: path.resolve(__dirname, "login/index.html"),
-        admin: path.resolve(__dirname, "admin/index.html"),
-        notfound: path.resolve(__dirname, "404.html"),
+      output: {
+        manualChunks: {
+          "react-core": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-toast",
+            "@radix-ui/react-tooltip",
+            "lucide-react",
+            "framer-motion",
+          ],
+          "page-admin": ["./src/pages/AdminDashboard.tsx"],
+          "page-prompts": ["./src/pages/PromptsLibrary.tsx"],
+          "page-resources": ["./src/pages/Resources.tsx"],
+          "page-portfolio": ["./src/pages/Portfolio.tsx"],
+          "page-about": ["./src/pages/AboutUs.tsx"],
+          "page-contact": ["./src/pages/ContactUs.tsx"],
+          "page-login": ["./src/pages/Login.tsx"],
+        },
       },
     },
   },
 }));
-
