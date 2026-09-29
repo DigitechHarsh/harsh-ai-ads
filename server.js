@@ -546,11 +546,25 @@ app.delete('/api/resources', requireAuth, async (req, res) => {
 app.use(express.static(path.join(__dirname, 'dist')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Fallback all other GET requests to index.html (Client-Side routing)
+// Fallback for all other routes
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ error: 'Not Found' });
   }
+
+  // Check if a specific HTML exists (e.g. /about -> dist/about/index.html)
+  const reqCleanPath = req.path.replace(/^\/|\/$/g, '');
+  const possiblePagePath = path.join(__dirname, 'dist', reqCleanPath, 'index.html');
+  const possibleDirectHtml = path.join(__dirname, 'dist', `${reqCleanPath}.html`);
+
+  if (fs.existsSync(possiblePagePath)) {
+    return res.sendFile(possiblePagePath);
+  } else if (fs.existsSync(possibleDirectHtml)) {
+    return res.sendFile(possibleDirectHtml);
+  } else if (fs.existsSync(path.join(__dirname, 'dist', '404.html'))) {
+    return res.status(404).sendFile(path.join(__dirname, 'dist', '404.html'));
+  }
+
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
