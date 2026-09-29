@@ -37,7 +37,7 @@ const MagneticBtn = ({ children, href }: { children: React.ReactNode; href: stri
 
 const HeroSection = () => {
   const [banners, setBanners] = useState<any[]>([]);
-  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 4000, stopOnInteraction: false })]);
+  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 5000, stopOnInteraction: false })]);
 
   // ── useMotionValue for parallax — ZERO React re-renders on mousemove ──
   const rawX = useMotionValue(0);
@@ -46,16 +46,16 @@ const HeroSection = () => {
   const smoothY = useSpring(rawY, { stiffness: 60, damping: 25 });
 
   // Parallax layers derived from motion values
-  const orbL_x  = useTransform(smoothX, v => v * -28);
-  const orbL_y  = useTransform(smoothY, v => v * -18);
-  const orbR_x  = useTransform(smoothX, v => v * 22);
-  const orbR_y  = useTransform(smoothY, v => v * 14);
-  const text_x  = useTransform(smoothX, v => v * -12);
-  const text_y  = useTransform(smoothY, v => v * -6);
-  const img_x   = useTransform(smoothX, v => v * 18);
-  const img_y   = useTransform(smoothY, v => v * 10);
+  const orbL_x  = useTransform(smoothX, v => v * -20);
+  const orbL_y  = useTransform(smoothY, v => v * -12);
+  const orbR_x  = useTransform(smoothX, v => v * 16);
+  const orbR_y  = useTransform(smoothY, v => v * 10);
+  const text_x  = useTransform(smoothX, v => v * -8);
+  const text_y  = useTransform(smoothY, v => v * -4);
+  const img_x   = useTransform(smoothX, v => v * 12);
+  const img_y   = useTransform(smoothY, v => v * 6);
 
-  // Image 3D tilt (separate motion values)
+  // Image 3D tilt
   const tiltX = useMotionValue(0);
   const tiltY = useMotionValue(0);
   const sTiltX = useSpring(tiltX, { stiffness: 200, damping: 22 });
@@ -78,8 +78,8 @@ const HeroSection = () => {
   const onImgMove = (e: React.MouseEvent) => {
     if (!imgRef.current) return;
     const r = imgRef.current.getBoundingClientRect();
-    tiltX.set(((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -8);
-    tiltY.set(((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 10);
+    tiltX.set(((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -6);
+    tiltY.set(((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) * 8);
   };
   const onImgLeave = () => { tiltX.set(0); tiltY.set(0); };
 
@@ -108,79 +108,78 @@ const HeroSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative pt-[72px] md:pt-[80px] overflow-hidden bg-black"
+      className="relative pt-[62px] md:pt-[68px] overflow-hidden bg-black/40 min-h-fit"
       onMouseMove={onSectionMove}
     >
-      {/* Animated grid — CSS only, no JS */}
-      <div className="absolute inset-0 grid-bg-animated opacity-100 pointer-events-none z-[1]" />
-
-      {/* Scanline — pure CSS, no JS */}
+      {/* Animated grid */}
+      <div className="absolute inset-0 grid-bg-animated opacity-60 pointer-events-none z-[1]" />
       <div className="scanline z-[2]" />
 
       <ParticleBackground />
 
-      {/* Parallax orbs — motion values, no re-renders */}
+      {/* Parallax orbs */}
       <motion.div
-        className="absolute top-1/4 -left-20 w-80 h-80 bg-gold/12 rounded-full blur-[90px] pointer-events-none"
+        className="absolute top-1/4 -left-20 w-72 h-72 bg-gold/10 rounded-full blur-[80px] pointer-events-none"
         style={{ x: orbL_x, y: orbL_y }}
       />
       <motion.div
-        className="absolute top-1/3 -right-20 w-64 h-64 bg-purple-500/8 rounded-full blur-[90px] pointer-events-none"
+        className="absolute top-1/3 -right-20 w-60 h-60 bg-purple-500/8 rounded-full blur-[80px] pointer-events-none"
         style={{ x: orbR_x, y: orbR_y }}
       />
 
+      {/* Top Banner Bars */}
       <div className="relative z-[45]">
         <ScrollingMarquee items={banners[0]?.marquee_text} />
         <OfferCounter />
       </div>
 
-      <div className="embla w-full h-full" ref={emblaRef}>
+      <div className="embla w-full h-full relative z-10" ref={emblaRef}>
         <div className="embla__container flex h-full">
           {banners.map((banner) => (
             <div key={banner.id} className="embla__slide flex-[0_0_100%] min-w-0 relative">
-              <div className="container max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center py-8 md:py-16">
+              <div className="container max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-4 lg:gap-8 items-center py-4 md:py-6 lg:py-8">
 
                 {/* Left — text with gentle parallax */}
                 <motion.div
-                  className="space-y-8 text-left z-10 p-2"
+                  className="space-y-3 md:space-y-4 text-left z-10 p-1 md:p-2"
                   style={{ x: text_x, y: text_y }}
                 >
                   <motion.div
-                    initial={{ opacity: 0, y: 30 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7 }}
+                    transition={{ duration: 0.6 }}
                   >
                     {banner.is_offer && (
                       <motion.div
-                        className="flex flex-wrap gap-2 mb-6"
+                        className="flex flex-wrap gap-2 mb-2 md:mb-3"
                         initial={{ opacity: 0, scale: 0.85 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring", stiffness: 180 }}
+                        transition={{ delay: 0.1, type: "spring", stiffness: 180 }}
                       >
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/25 text-gold text-[10px] font-bold uppercase tracking-widest">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/25 text-gold text-[10px] font-bold uppercase tracking-widest">
                           <Sparkles className="w-3 h-3" />
                           Special Offer
                         </div>
                       </motion.div>
                     )}
 
-                    {/* Heading — word reveal */}
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold leading-[1.1] tracking-tight mb-6">
+                    {/* Heading — clean compact scale */}
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-[1.12] tracking-tight mb-2 md:mb-3">
                       {banner.title.split(' ').map((word: string, i: number) => {
                         const highlight = ['premium','ai','visuals','ads'].includes(word.toLowerCase().replace(/[^a-z]/g,''));
                         return (
                           <motion.span
                             key={i}
-                            className="inline-block overflow-hidden mr-[0.25em]"
+                            className="inline-block overflow-hidden mr-[0.2em]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 0.1 + i * 0.07 }}
+                            transition={{ delay: 0.05 + i * 0.04 }}
                           >
                             <motion.span
                               className={`inline-block ${highlight ? 'shimmer-text' : ''}`}
-                              initial={{ y: "110%" }}
+                              initial={{ y: "100%" }}
                               animate={{ y: 0 }}
-                              transition={{ delay: 0.1 + i * 0.07, duration: 0.6, ease: [0.16,1,0.3,1] }}
+                              transition={{ delay: 0.05 + i * 0.04, duration: 0.5, ease: [0.16,1,0.3,1] }}
                             >
                               {word}{' '}
                             </motion.span>
@@ -190,115 +189,108 @@ const HeroSection = () => {
                     </h1>
 
                     <motion.p
-                      className="text-muted-foreground text-lg md:text-xl max-w-lg leading-relaxed font-light mb-8"
-                      initial={{ opacity: 0, y: 18 }}
+                      className="text-muted-foreground text-xs sm:text-sm md:text-base max-w-lg leading-relaxed font-light mb-4 md:mb-5"
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6, duration: 0.6 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
                     >
                       {banner.subtitle}
                     </motion.p>
 
-                    {/* CTA */}
+                    {/* CTA Buttons & Trust Badge */}
                     <motion.div
-                      className="flex flex-col sm:flex-row gap-4"
-                      initial={{ opacity: 0, y: 18 }}
+                      className="flex flex-wrap items-center gap-3"
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8, duration: 0.6 }}
+                      transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <MagneticBtn href={banner.cta_link}>
                         <div className="relative group">
-                          {/* Glow — opacity transition only (GPU-friendly) */}
-                          <div className="absolute inset-0 bg-gold-gradient rounded-xl opacity-50 group-hover:opacity-80 transition-opacity duration-300 scale-110 blur-lg" />
-                          <Button size="lg" className="relative bg-gold-gradient text-primary-foreground font-bold px-10 py-7 rounded-xl text-lg border-0 shadow-none">
+                          <div className="absolute inset-0 bg-gold-gradient rounded-xl opacity-50 group-hover:opacity-80 transition-opacity duration-300 scale-105 blur-md" />
+                          <Button size="default" className="relative bg-gold-gradient text-primary-foreground font-bold px-6 sm:px-8 py-5 rounded-xl text-sm md:text-base border-0 shadow-none">
                             {banner.cta_text}
                             <motion.span
-                              className="ml-2 inline-block"
-                              animate={{ x: [0, 4, 0] }}
+                              className="ml-1.5 inline-block"
+                              animate={{ x: [0, 3, 0] }}
                               transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
                             >
-                              <ChevronRight className="w-5 h-5" />
+                              <ChevronRight className="w-4 h-4" />
                             </motion.span>
                           </Button>
                         </div>
                       </MagneticBtn>
 
                       {/* Trust badge */}
-                      <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.04] border border-white/[0.06] rounded-xl">
+                      <div className="flex items-center gap-2 px-3.5 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl">
                         <div className="flex gap-0.5">
                           {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-gold text-gold" />)}
                         </div>
-                        <span className="text-xs font-bold text-muted-foreground">25+ Brands Trust Us</span>
+                        <span className="text-[11px] font-bold text-muted-foreground">25+ Brands Trust Us</span>
                       </div>
                     </motion.div>
 
-                    {/* Stats */}
+                    {/* Compact Stats Row */}
                     <motion.div
-                      className="flex gap-6 mt-8 pt-8 border-t border-white/5"
+                      className="flex gap-6 mt-4 md:mt-5 pt-3 border-t border-white/10"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{ delay: 1, duration: 0.8 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
                     >
-                      {[{ val: "4K", label: "Ultra HD" }, { val: "24-48 hrs", label: "Delivery per video" }].map((s, i) => (
-                        <div key={i} className="text-center">
-                          <div className="text-xl font-black text-gold-gradient font-display">{s.val}</div>
-                          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">{s.label}</div>
+                      {[{ val: "4K", label: "Ultra HD" }, { val: "24-48 hrs", label: "Fast Delivery" }, { val: "₹399", label: "Special Deal" }].map((s, i) => (
+                        <div key={i} className="text-left">
+                          <div className="text-base sm:text-lg font-black text-gold-gradient font-display">{s.val}</div>
+                          <div className="text-[9px] text-muted-foreground uppercase tracking-wider">{s.label}</div>
                         </div>
                       ))}
                     </motion.div>
                   </motion.div>
                 </motion.div>
 
-                {/* Right — image with 3D tilt */}
+                {/* Right — banner image with 3D tilt (Fits completely above fold) */}
                 <motion.div
                   ref={imgRef}
-                  initial={{ opacity: 0, scale: 0.88, x: 60 }}
+                  initial={{ opacity: 0, scale: 0.92, x: 40 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
-                  transition={{ duration: 1, ease: [0.16,1,0.3,1], delay: 0.2 }}
+                  transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.2 }}
                   onMouseMove={onImgMove}
                   onMouseLeave={onImgLeave}
                   style={{ x: img_x, y: img_y }}
-                  className="perspective-container relative aspect-[4/5] md:aspect-square w-full max-w-xl mx-auto"
+                  className="perspective-container relative w-full max-w-sm sm:max-w-md lg:max-w-lg aspect-[16/10] sm:aspect-[4/3] md:aspect-[4/3] lg:aspect-[4/3] max-h-[360px] lg:max-h-[420px] mx-auto"
                 >
-                  {/* Outer glow rings — CSS animation only */}
+                  {/* Outer glow rings */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <motion.div
-                      className="absolute w-[112%] h-[112%] rounded-full border border-gold/8"
+                      className="absolute w-[106%] h-[106%] rounded-full border border-gold/10"
                       animate={{ rotate: 360 }}
                       transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
                     />
-                    <motion.div
-                      className="absolute w-[128%] h-[128%] rounded-full border border-purple-500/5"
-                      animate={{ rotate: -360 }}
-                      transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-                    />
                   </div>
 
-                  {/* Ambient glow — opacity pulse only */}
-                  <div className="absolute inset-0 bg-gold/12 blur-[90px] rounded-full opacity-40 animate-pulse pointer-events-none" />
+                  {/* Ambient glow */}
+                  <div className="absolute inset-0 bg-gold/10 blur-[60px] rounded-full opacity-40 animate-pulse pointer-events-none" />
 
-                  {/* Card — tilt via motion values, no state */}
+                  {/* Card with image */}
                   <motion.div
-                    className="card-3d relative w-full h-full rounded-2xl md:rounded-3xl overflow-hidden border border-gold/20 shadow-2xl holographic"
+                    className="card-3d relative w-full h-full rounded-xl md:rounded-2xl overflow-hidden border border-gold/30 shadow-2xl holographic bg-black"
                     style={{ rotateX: sTiltX, rotateY: sTiltY }}
                   >
                     {banner.media_type === "video"
                       ? <video src={banner.media_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
-                      : <img src={banner.media_url} alt={banner.title} className="w-full h-full object-cover" />
+                      : <img src={banner.media_url} alt={banner.title} className="w-full h-full object-cover object-center" />
                     }
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-gold/4 to-transparent pointer-events-none" />
-                    <div className="absolute top-0 left-0 w-14 h-14 border-t-2 border-l-2 border-gold/35 rounded-tl-2xl pointer-events-none" />
-                    <div className="absolute bottom-0 right-0 w-14 h-14 border-b-2 border-r-2 border-gold/35 rounded-br-2xl pointer-events-none" />
+                    <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-gold/40 rounded-tl-xl pointer-events-none" />
+                    <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-gold/40 rounded-br-xl pointer-events-none" />
 
                     {/* Floating AI badge */}
                     <motion.div
-                      className="absolute top-4 right-4 bg-gold/10 border border-gold/25 rounded-xl px-3 py-2 pointer-events-none"
-                      animate={{ y: [-4, 4, -4] }}
+                      className="absolute top-3 right-3 bg-black/70 backdrop-blur-md border border-gold/30 rounded-lg px-2.5 py-1.5 pointer-events-none"
+                      animate={{ y: [-3, 3, -3] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     >
                       <div className="flex items-center gap-1.5">
                         <Zap className="w-3 h-3 text-gold" />
-                        <span className="text-[10px] font-black text-gold uppercase tracking-widest">AI Powered</span>
+                        <span className="text-[9px] font-black text-gold uppercase tracking-widest">AI Powered</span>
                       </div>
                     </motion.div>
                   </motion.div>

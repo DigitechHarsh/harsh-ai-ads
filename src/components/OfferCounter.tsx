@@ -36,7 +36,7 @@ const OfferCounter = () => {
     <motion.div 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full bg-gold/10 border-b border-gold/20 py-2 flex items-center justify-center gap-4 px-4 overflow-hidden relative"
+      className="w-full bg-gold/10 border-b border-gold/20 py-1.5 flex items-center justify-center gap-3 px-4 overflow-hidden relative"
     >
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4 text-gold animate-pulse" />
