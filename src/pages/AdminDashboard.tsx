@@ -372,16 +372,49 @@ export default function AdminDashboard() {
   };
 
   const uploadToCloudinary = async (file: File, resourceType: "auto" | "raw" | "image" | "video" = "auto") => {
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-    if (!cloudName || !uploadPreset) throw new Error("Cloudinary credentials missing");
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, { method: "POST", body: formData });
-    if (!res.ok) throw new Error("Upload failed");
-    const data = await res.json();
-    return data.secure_url;
+    const isVideo = file.type.startsWith("video/") || resourceType === "video";
+    const actualType = isVideo ? "video" : (resourceType !== "auto" ? resourceType : (file.type.startsWith("image/") ? "image" : "auto"));
+
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dkylo3r27";
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "shzrlahh";
+
+    // Try Cloudinary Direct Upload
+    if (cloudName && uploadPreset) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", uploadPreset);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${actualType}/upload`, { 
+          method: "POST", 
+          body: formData 
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.secure_url) return data.secure_url;
+        }
+      } catch (cloudErr) {
+        console.warn("Direct Cloudinary upload failed, falling back to server upload:", cloudErr);
+      }
+    }
+
+    // Fallback: Direct Server Upload via /api/upload
+    const serverFormData = new FormData();
+    serverFormData.append("file", file);
+    const token = localStorage.getItem("token");
+    const serverRes = await fetch("/api/upload", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: serverFormData,
+    });
+
+    if (!serverRes.ok) {
+      const serverErr = await serverRes.json().catch(() => ({ error: "Server upload failed" }));
+      throw new Error(serverErr.error || "Failed to upload media file. Please try again or provide a direct URL.");
+    }
+
+    const serverData = await serverRes.json();
+    return serverData.secure_url || serverData.url;
   };
 
   const fetchPrompts = async () => {
@@ -493,7 +526,7 @@ export default function AdminDashboard() {
       let publicUrl = sampleUrl || undefined;
       let mediaType = sampleMediaType;
       if (file) {
-        publicUrl = await uploadToCloudinary(file);
+        publicUrl = await uploadToCloudinary(file, sampleMediaType);
         if (!mediaType) {
           mediaType = file.type.startsWith("video/") ? "video" : "image";
         }

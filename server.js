@@ -478,6 +478,40 @@ app.delete('/api/prompts', requireAuth, async (req, res) => {
 });
 
 // ==========================================
+// 🚀 GENERAL MEDIA UPLOAD ROUTE (/api/upload)
+// ==========================================
+app.post('/api/upload', requireAuth, (req, res) => {
+  const uploadDir = path.join(__dirname, 'uploads');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const form = formidable({
+    multiples: false,
+    uploadDir: uploadDir,
+    keepExtensions: true,
+    maxFileSize: 500 * 1024 * 1024, // 500MB max limit
+  });
+
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      console.error('File upload error:', err);
+      return res.status(500).json({ error: 'File upload failed: ' + err.message });
+    }
+
+    try {
+      const file = Array.isArray(files.file) ? files.file[0] : files.file;
+      if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+      const fileUrl = `/uploads/${path.basename(file.filepath)}`;
+      return res.status(200).json({ url: fileUrl, secure_url: fileUrl, success: true });
+    } catch (uploadError) {
+      return res.status(500).json({ error: uploadError.message });
+    }
+  });
+});
+
+// ==========================================
 // 📚 RESOURCES ROUTES
 // ==========================================
 
