@@ -253,7 +253,8 @@ export default function AdminDashboard() {
   const [samples, setSamples] = useState<any[]>([]);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [isTeaser, setIsTeaser] = useState(false);
+  const [sampleMediaType, setSampleMediaType] = useState<"video" | "image" | "teaser">("video");
+  const [sampleUrl, setSampleUrl] = useState("");
   const [uploading, setUploading] = useState(false);
 
   // Offer Stats
@@ -487,35 +488,44 @@ export default function AdminDashboard() {
   const handleUploadSample = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return toast.error("Please provide a title");
-    if (!file && !editingSampleId) return toast.error("Please provide a file");
+    if (!file && !sampleUrl && !editingSampleId) return toast.error("Please upload a file OR provide a media URL");
     setUploading(true);
     try {
-      let publicUrl = undefined, mediaType = undefined;
+      let publicUrl = sampleUrl || undefined;
+      let mediaType = sampleMediaType;
       if (file) {
         publicUrl = await uploadToCloudinary(file);
-        mediaType = isTeaser ? "teaser" : (file.type.startsWith("video/") ? "video" : "image");
+        if (!mediaType) {
+          mediaType = file.type.startsWith("video/") ? "video" : "image";
+        }
       }
-      const payload: any = { title };
+      const payload: any = { title, media_type: mediaType };
       if (publicUrl) payload.media_url = publicUrl;
-      if (mediaType) payload.media_type = mediaType;
       const url = editingSampleId ? `/api/portfolio?id=${editingSampleId}` : "/api/portfolio";
       await authFetch(url, { method: editingSampleId ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      toast.success(editingSampleId ? "Sample updated!" : "Sample added!");
-      setTitle(""); setFile(null); setEditingSampleId(null); setIsTeaser(false);
+      toast.success(editingSampleId ? "Portfolio item updated!" : "Portfolio item added!");
+      setTitle(""); setFile(null); setSampleUrl(""); setEditingSampleId(null); setSampleMediaType("video");
       fetchSamples();
     } catch(e: any) { toast.error(e.message); }
     setUploading(false);
   };
 
   const handleEditSample = (sample: any) => {
-    setEditingSampleId(sample.id); setTitle(sample.title);
-    setIsTeaser(sample.media_type === "teaser"); setFile(null);
-    toast.info("Editing Sample."); window.scrollTo({ top: 0, behavior: "smooth" });
+    setEditingSampleId(sample.id);
+    setTitle(sample.title);
+    setSampleMediaType(sample.media_type || "video");
+    setSampleUrl(sample.media_url || "");
+    setFile(null);
+    toast.info("Editing Portfolio item.");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDeleteSample = async (id: string) => {
-    try { await authFetch(`/api/portfolio?id=${id}`, { method: "DELETE" }); toast.success("Sample deleted"); fetchSamples(); }
-    catch(e: any) { toast.error(e.message); }
+  const handleDeleteSample = async (id: string, mediaUrl?: string) => {
+    try {
+      await authFetch(`/api/portfolio?id=${id}`, { method: "DELETE" });
+      toast.success("Portfolio item deleted");
+      fetchSamples();
+    } catch(e: any) { toast.error(e.message); }
   };
 
   const handleSaveCampaign = async (e: React.FormEvent) => {
@@ -1013,53 +1023,156 @@ export default function AdminDashboard() {
 
               {/* ── PORTFOLIO TAB ── */}
               <TabsContent value="samples" className="mt-0 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                  <div className="md:col-span-4 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Upload / Edit Form */}
+                  <div className="lg:col-span-4 space-y-6">
                     <Card className="border-gold/20 bg-gold/5 shadow-sm">
-                      <CardHeader><CardTitle className="text-xl font-display font-bold">Upload Portfolio</CardTitle><CardDescription>Add new AI images or videos.</CardDescription></CardHeader>
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-xl font-display font-bold flex items-center gap-2">
+                          <LayoutIcon className="w-5 h-5 text-gold" />
+                          {editingSampleId ? "Edit Portfolio Item" : "Add to Portfolio"}
+                        </CardTitle>
+                        <CardDescription>Publish high-converting AI videos, images, or teasers.</CardDescription>
+                      </CardHeader>
                       <CardContent>
                         <form onSubmit={handleUploadSample} className="space-y-4">
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Project Title</label><Input placeholder="e.g. Rolex Luxury Ad" value={title} onChange={e => setTitle(e.target.value)} /></div>
-                          <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media File</label><Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="bg-background" /></div>
-                          <div className="flex items-center gap-2 mt-2"><input type="checkbox" id="isTeaser" checked={isTeaser} onChange={(e) => setIsTeaser(e.target.checked)} className="rounded" /><label htmlFor="isTeaser" className="text-xs font-medium text-muted-foreground cursor-pointer">Mark as AI Film Teaser</label></div>
-                          <Button className="w-full mt-2" disabled={uploading}>{uploading ? "Saving..." : (editingSampleId ? "Update Portfolio" : "Publish Portfolio")}</Button>
-                          {editingSampleId && <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingSampleId(null); setTitle(""); }}>Cancel Edit</Button>}
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Project Title</label>
+                            <Input placeholder="e.g. Rolex Daytona Cinematic Ad" value={title} onChange={e => setTitle(e.target.value)} className="bg-background" />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media Category</label>
+                            <select
+                              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:border-gold outline-none"
+                              value={sampleMediaType}
+                              onChange={e => setSampleMediaType(e.target.value as any)}
+                            >
+                              <option value="video">🎬 AI Video Ad</option>
+                              <option value="image">📸 AI Studio Image</option>
+                              <option value="teaser">✨ Film Teaser / 3D CGI</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media Direct URL (Optional)</label>
+                            <Input placeholder="https://res.cloudinary.com/... or MP4 link" value={sampleUrl} onChange={e => setSampleUrl(e.target.value)} className="bg-background text-xs" />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Or Upload Media File</label>
+                            <Input type="file" accept="image/*,video/*" onChange={e => setFile(e.target.files?.[0] || null)} className="bg-background" />
+                          </div>
+
+                          {/* Live Preview Box */}
+                          {(sampleUrl || file) && (
+                            <div className="mt-2 p-2 rounded-xl bg-background/80 border border-border/50">
+                              <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5">Live Media Preview:</p>
+                              <div className="aspect-video rounded-lg overflow-hidden bg-black flex items-center justify-center">
+                                {sampleMediaType === "image" ? (
+                                  <img
+                                    src={file ? URL.createObjectURL(file) : sampleUrl}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <video
+                                    src={file ? URL.createObjectURL(file) : sampleUrl}
+                                    className="w-full h-full object-cover"
+                                    controls
+                                    muted
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <Button className="w-full mt-3 bg-gold hover:bg-gold-dark text-black font-bold h-10" disabled={uploading}>
+                            {uploading ? "Uploading to Cloud..." : (editingSampleId ? "Update Portfolio Item" : "Publish to Portfolio")}
+                          </Button>
+                          {editingSampleId && (
+                            <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingSampleId(null); setTitle(""); setSampleUrl(""); setFile(null); }}>
+                              Cancel Editing
+                            </Button>
+                          )}
                         </form>
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="md:col-span-8">
+
+                  {/* Active Portfolio Grid */}
+                  <div className="lg:col-span-8">
                     <Card className="border-border/50 shadow-sm overflow-hidden">
-                      <CardHeader className="flex flex-row items-center justify-between bg-secondary/10 pb-6 border-b border-border/30">
-                        <div><CardTitle className="text-xl font-display font-bold">Active Portfolio</CardTitle><CardDescription>Manage shown images and videos.</CardDescription></div>
-                        <div className="relative w-48"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" /><Input placeholder="Search projects..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border/50" /></div>
+                      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-secondary/10 pb-4 border-b border-border/30 gap-3">
+                        <div>
+                          <CardTitle className="text-xl font-display font-bold">Active Portfolio Items</CardTitle>
+                          <CardDescription>Manage all client showcases live on your website.</CardDescription>
+                        </div>
+                        <div className="relative w-full sm:w-56">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                          <Input placeholder="Search portfolio..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-8 h-8 text-xs bg-background border-border/50" />
+                        </div>
                       </CardHeader>
-                      <CardContent className="pt-6">
-                        <Tabs defaultValue="videos" className="w-full">
-                          <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50 p-1 h-10">
-                            <TabsTrigger value="videos" className="text-xs">AI Videos ({filteredSamples.filter(s => s.media_type === "video").length})</TabsTrigger>
-                            <TabsTrigger value="images" className="text-xs">AI Images ({filteredSamples.filter(s => s.media_type === "image").length})</TabsTrigger>
-                            <TabsTrigger value="teasers" className="text-xs">Film Teasers ({filteredSamples.filter(s => s.media_type === "teaser").length})</TabsTrigger>
+                      <CardContent className="pt-4">
+                        <Tabs defaultValue="all" className="w-full">
+                          <TabsList className="grid w-full grid-cols-4 mb-4 bg-secondary/50 p-1 h-9">
+                            <TabsTrigger value="all" className="text-xs">All ({filteredSamples.length})</TabsTrigger>
+                            <TabsTrigger value="videos" className="text-xs">Videos ({filteredSamples.filter(s => s.media_type === "video").length})</TabsTrigger>
+                            <TabsTrigger value="images" className="text-xs">Images ({filteredSamples.filter(s => s.media_type === "image").length})</TabsTrigger>
+                            <TabsTrigger value="teasers" className="text-xs">Teasers ({filteredSamples.filter(s => s.media_type === "teaser").length})</TabsTrigger>
                           </TabsList>
-                          {["videos", "images", "teasers"].map(tab => (
-                            <TabsContent key={tab} value={tab} className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                              {filteredSamples.filter(s => tab === "videos" ? s.media_type === "video" : tab === "images" ? s.media_type === "image" : s.media_type === "teaser").map(s => (
-                                <div key={s.id} className="relative group rounded-xl overflow-hidden border border-border/50 bg-black aspect-square">
-                                  {s.media_type === "image" ? <img src={s.media_url} className="w-full h-full object-cover" /> : <video src={s.media_url} className="w-full h-full object-cover opacity-80" />}
-                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
-                                    <p className="text-[10px] font-bold text-white text-center mb-2 line-clamp-2">{s.title}</p>
-                                    <div className="flex gap-2">
-                                      <Button variant="secondary" size="icon" className="h-7 w-7" onClick={() => handleEditSample(s)}><Settings2 className="w-3.5 h-3.5" /></Button>
-                                      <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteSample(s.id, s.media_url)}><Trash className="w-3.5 h-3.5" /></Button>
+                          {["all", "videos", "images", "teasers"].map(tab => {
+                            const items = filteredSamples.filter(s => 
+                              tab === "all" ? true :
+                              tab === "videos" ? s.media_type === "video" :
+                              tab === "images" ? s.media_type === "image" :
+                              s.media_type === "teaser"
+                            );
+                            return (
+                              <TabsContent key={tab} value={tab} className="mt-0">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1">
+                                  {items.map(s => (
+                                    <div key={s.id} className="group relative rounded-2xl overflow-hidden border border-border/50 bg-card hover:border-gold/50 transition-all flex flex-col shadow-sm">
+                                      <div className="relative aspect-video bg-black overflow-hidden">
+                                        {s.media_type === "image" ? (
+                                          <img src={s.media_url} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                        ) : (
+                                          <video src={s.media_url} className="w-full h-full object-cover opacity-90 group-hover:opacity-100" muted playsInline />
+                                        )}
+                                        <div className="absolute top-2 left-2">
+                                          <Badge variant="secondary" className="text-[9px] uppercase font-bold tracking-wider bg-black/70 backdrop-blur-sm border border-white/10 text-white">
+                                            {s.media_type === "video" ? "🎬 Video" : s.media_type === "image" ? "📸 Image" : "✨ Teaser"}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                      <div className="p-3 flex flex-col justify-between flex-grow">
+                                        <h4 className="font-bold text-xs line-clamp-1 mb-2 text-foreground" title={s.title}>{s.title}</h4>
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/30 gap-1">
+                                          <a href={s.media_url} target="_blank" rel="noreferrer" className="text-[10px] text-gold hover:underline flex items-center gap-1 truncate max-w-[100px]">
+                                            <ExternalLink className="w-3 h-3 flex-shrink-0" /> Link
+                                          </a>
+                                          <div className="flex gap-1.5">
+                                            <Button variant="secondary" size="icon" className="h-7 w-7 rounded-lg" onClick={() => handleEditSample(s)} title="Edit">
+                                              <Settings2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                            <Button variant="destructive" size="icon" className="h-7 w-7 rounded-lg" onClick={() => handleDeleteSample(s.id, s.media_url)} title="Delete">
+                                              <Trash className="w-3.5 h-3.5" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
+                                  ))}
+                                  {items.length === 0 && (
+                                    <div className="col-span-full py-16 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30">
+                                      <LayoutIcon className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                                      <p className="text-muted-foreground text-xs italic">No portfolio items in this category.</p>
+                                    </div>
+                                  )}
                                 </div>
-                              ))}
-                              {filteredSamples.filter(s => tab === "videos" ? s.media_type === "video" : tab === "images" ? s.media_type === "image" : s.media_type === "teaser").length === 0 && (
-                                <div className="col-span-full py-20 text-center bg-secondary/5 rounded-2xl border-2 border-dashed border-border/30"><p className="text-muted-foreground text-sm italic">No items found.</p></div>
-                              )}
-                            </TabsContent>
-                          ))}
+                              </TabsContent>
+                            );
+                          })}
                         </Tabs>
                       </CardContent>
                     </Card>

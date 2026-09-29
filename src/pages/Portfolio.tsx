@@ -8,25 +8,16 @@ import FinalCTA from "@/components/FinalCTA";
 
 export default function Portfolio() {
   return (
-    <main className="min-h-screen bg-background pt-24">
-      <div className="p-4 max-w-7xl mx-auto">
+    <main className="min-h-screen bg-background pt-16 md:pt-20">
+      <div className="px-4 sm:px-6 pt-2 max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back to Home
           </Button>
         </Link>
-      </div>
-
-      <div className="pt-6 pb-12 px-6 max-w-5xl mx-auto text-center">
-        <Badge variant="secondary" className="mb-4">
-          <Film className="w-4 h-4 mr-2 text-primary" /> Verified Client Results
+        <Badge variant="outline" className="text-[10px] text-gold border-gold/30">
+          <Film className="w-3 h-3 mr-1 text-gold" /> Commercial Work
         </Badge>
-        <h1 className="text-4xl md:text-6xl font-bold font-display uppercase tracking-wider mb-4">
-          Featured <span className="shimmer-text">Portfolio</span>
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our viral AI video campaigns, CGI animations, and commercial product imagery that convert viewers into buyers.
-        </p>
       </div>
 
       <SamplesSection />

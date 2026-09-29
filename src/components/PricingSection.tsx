@@ -286,13 +286,13 @@ const PricingSection = () => {
   const [isMonthly, setIsMonthly] = useState(false);
 
   return (
-    <section id="pricing" className="py-24 relative bg-background overflow-hidden">
+    <section id="pricing" className="py-10 md:py-14 relative bg-background overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
       
-      <div className="container max-w-7xl mx-auto px-4 relative z-10">
-        <div className="text-center mb-12">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <div className="text-center mb-8 md:mb-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}

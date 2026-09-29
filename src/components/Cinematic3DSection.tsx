@@ -49,7 +49,7 @@ const Cinematic3DSection = () => {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[120vh] flex items-center justify-center overflow-hidden bg-background py-32"
+      className="relative min-h-[80vh] md:min-h-[90vh] flex items-center justify-center overflow-hidden bg-background py-10 md:py-16"
     >
       {/* Deep background grid */}
       <div className="absolute inset-0 opacity-5"

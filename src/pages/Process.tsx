@@ -1,4 +1,4 @@
-import { ArrowLeft, GitFork, Sparkles } from "lucide-react";
+import { ArrowLeft, GitFork } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
@@ -12,25 +12,16 @@ import afterImg from "@/assets/after.png";
 
 export default function Process() {
   return (
-    <main className="min-h-screen bg-background pt-24">
-      <div className="p-4 max-w-7xl mx-auto">
+    <main className="min-h-screen bg-background pt-16 md:pt-20">
+      <div className="px-4 sm:px-6 pt-2 max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/">
-          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Home
+          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white text-xs">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back to Home
           </Button>
         </Link>
-      </div>
-
-      <div className="pt-6 pb-12 px-6 max-w-5xl mx-auto text-center">
-        <Badge variant="secondary" className="mb-4">
-          <GitFork className="w-4 h-4 mr-2 text-primary" /> Seamless Execution
+        <Badge variant="outline" className="text-[10px] text-gold border-gold/30">
+          <GitFork className="w-3 h-3 mr-1 text-gold" /> 24-48h Delivery
         </Badge>
-        <h1 className="text-4xl md:text-6xl font-bold font-display uppercase tracking-wider mb-4">
-          How It <span className="shimmer-text">Works</span>
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          From photo submission to cinematic render in 4 streamlined steps. Zero shooting equipment needed.
-        </p>
       </div>
 
       <ProcessSection />

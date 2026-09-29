@@ -22,9 +22,9 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: BeforeAfterSliderProps) 
   const onTouchMove = (e: React.TouchEvent) => handleMove(e.touches[0].clientX);
 
   return (
-    <section className="py-20 px-4 bg-background relative overflow-hidden">
+    <section className="py-10 md:py-14 px-4 sm:px-6 bg-background relative overflow-hidden">
       <div className="container max-w-5xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             whileInView={{ opacity: 1, scale: 1 }}

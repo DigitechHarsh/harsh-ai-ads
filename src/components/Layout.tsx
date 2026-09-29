@@ -4,6 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
 import FloatingOfferBubble from "./FloatingOfferBubble";
+import ParticlesBackground from "./ParticlesBackground";
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,13 +15,16 @@ const Layout = ({ children }: LayoutProps) => {
   const isAdmin = location.pathname.startsWith("/admin") || location.pathname === "/login";
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background relative selection:bg-gold/30 selection:text-white">
+      {/* Cinematic Ambient Particles & Glow Effect */}
+      <ParticlesBackground />
+
       {!isAdmin && (
         <header className="fixed top-0 left-0 right-0 z-[70]">
           <Navbar />
         </header>
       )}
-      <main className="flex-grow">
+      <main className="flex-grow relative z-10">
         {children}
       </main>
       {!isAdmin && <Footer />}

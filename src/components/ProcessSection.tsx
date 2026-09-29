@@ -125,7 +125,7 @@ const ProcessSection = () => {
   const lineProgress = useTransform(scrollYProgress, [0.2, 0.7], [0, 1]);
 
   return (
-    <section id="process" ref={sectionRef} className="py-20 md:py-32 px-6 relative overflow-hidden">
+    <section id="process" ref={sectionRef} className="py-10 md:py-16 px-4 sm:px-6 relative overflow-hidden">
       {/* Aurora bg */}
       <div className="absolute inset-0 aurora-bg opacity-40 pointer-events-none" />
 
@@ -139,7 +139,7 @@ const ProcessSection = () => {
         {/* 3D heading */}
         <motion.div
           style={{ rotateX: headingRotateX, opacity: headingOpacity }}
-          className="text-center max-w-3xl mx-auto mb-20 perspective-near"
+          className="text-center max-w-3xl mx-auto mb-8 md:mb-10 perspective-near"
         >
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}

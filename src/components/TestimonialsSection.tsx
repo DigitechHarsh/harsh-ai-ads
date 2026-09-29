@@ -139,7 +139,7 @@ const TestimonialsSection = () => {
   };
 
   return (
-    <section id="reviews" className="py-24 px-4 bg-background relative overflow-hidden">
+    <section id="reviews" className="py-10 md:py-14 px-4 sm:px-6 bg-background relative overflow-hidden">
       {/* Ambient bg */}
       <div className="absolute inset-0 aurora-bg opacity-30 pointer-events-none" />
       <motion.div
@@ -149,7 +149,7 @@ const TestimonialsSection = () => {
       />
 
       <div className="container max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-14 gap-6">
+        <div className="flex flex-col md:flex-row items-end justify-between mb-8 md:mb-10 gap-6">
           <div className="max-w-2xl">
             <motion.div
               initial={{ opacity: 0, x: -30 }}

@@ -156,7 +156,7 @@ const ServiceCard = ({ service, index }: { service: typeof services[0]; index: n
 
 const ServicesSection = () => {
   return (
-    <section id="services" className="py-24 bg-background relative overflow-hidden">
+    <section id="services" className="py-10 md:py-14 bg-background relative overflow-hidden">
       {/* Aurora ambient background */}
       <div className="absolute inset-0 aurora-bg opacity-50 pointer-events-none" />
 
@@ -175,9 +175,9 @@ const ServicesSection = () => {
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: -4 }}
       />
 
-      <div className="container max-w-7xl mx-auto px-6 relative z-10">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Section header */}
-        <div className="text-center mb-20">
+        <div className="text-center mb-8 md:mb-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             whileInView={{ opacity: 1, scale: 1, y: 0 }}
