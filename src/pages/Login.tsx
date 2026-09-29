@@ -60,8 +60,8 @@ export default function Login() {
               <label className="text-sm font-medium">Password</label>
               <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            <Button type="submit" className="w-full bg-gold-gradient text-primary-foreground" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <Button type="submit" className="w-full bg-gold-gradient text-black font-extrabold shadow-md hover:opacity-90 h-11 text-sm uppercase tracking-wider" disabled={loading}>
+              {loading ? "Logging in..." : "Login to Admin"}
             </Button>
           </form>
         </CardContent>

@@ -26,7 +26,10 @@
     --input: 0 0% 14.9%;
     --ring: 43 80% 55%;
     --radius: 0.75rem;
-    --gold: hsl(43 80% 55%);
+    --gold: 43 80% 55%;
+    --gold-dark: 43 75% 42%;
+    --gold-light: 43 90% 65%;
+    --surface-elevated: 0 0% 8%;
     /* 3D System */
     --perspective: 1200px;
     --perspective-near: 800px;

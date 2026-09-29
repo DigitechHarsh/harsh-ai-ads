@@ -939,8 +939,8 @@ export default function AdminDashboard() {
                         </div>
                         <div className="flex gap-1 ml-2">
                           <Input type="number" value={newLimit} onChange={(e) => setNewLimit(e.target.value)} className="w-16 h-8 text-xs bg-background" placeholder="Limit" />
-                          <Button size="icon" className="h-8 w-8" onClick={handleUpdateLimit} title="Update Limit"><Settings2 className="w-3 h-3" /></Button>
-                          <Button size="icon" variant="destructive" className="h-8 w-8" onClick={handleResetOffer} title="Reset Claims"><RotateCcw className="w-3 h-3" /></Button>
+                          <Button size="icon" className="h-8 w-8 bg-gold-gradient text-black hover:opacity-90" onClick={handleUpdateLimit} title="Update Limit"><Settings2 className="w-3.5 h-3.5" /></Button>
+                          <Button size="icon" variant="destructive" className="h-8 w-8" onClick={handleResetOffer} title="Reset Claims"><RotateCcw className="w-3.5 h-3.5" /></Button>
                         </div>
                       </div>
                     </CardHeader>
@@ -964,7 +964,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Marquee Text</label><textarea placeholder="PREMIUM • FAST • AI" className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm min-h-[60px]" value={bannerForm.marquee_text} onChange={e => setBannerForm({...bannerForm, marquee_text: e.target.value})} /></div>
                           <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Upload Media</label><Input type="file" onChange={e => setBannerFile(e.target.files?.[0] || null)} className="bg-background" /></div>
-                          <Button type="submit" className="w-full h-11 bg-gold hover:bg-gold-dark text-black font-bold" disabled={uploading}>{uploading ? "Saving..." : (editingBannerId ? "Update Banner" : "Publish Banner")}</Button>
+                          <Button type="submit" className="w-full h-11 bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20" disabled={uploading}>{uploading ? "Saving..." : (editingBannerId ? "Update Banner" : "Publish Banner")}</Button>
                           {editingBannerId && <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingBannerId(null); setBannerForm({ title: '', subtitle: '', cta_text: 'Get Started', cta_link: '#form', media_type: 'image', is_offer: false, marquee_text: '' }); }}>Cancel Editing</Button>}
                         </form>
                       </div>
@@ -976,10 +976,10 @@ export default function AdminDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
                           {filteredBanners.map(b => (
                             <div key={b.id} className={`flex flex-col p-4 border rounded-2xl group transition-all hover:shadow-lg relative overflow-hidden ${b.is_offer ? 'bg-gold/5 border-gold/30' : 'bg-background border-border/50'}`}>
-                              {b.is_offer && <div className="absolute top-0 right-0"><div className="bg-gold text-black text-[8px] font-bold px-3 py-1 rounded-bl-xl uppercase">Tracking Scarcity</div></div>}
+                              {b.is_offer && <div className="absolute top-0 right-0"><div className="bg-gold-gradient text-black text-[8px] font-extrabold px-3 py-1 rounded-bl-xl uppercase shadow-sm">Tracking Scarcity</div></div>}
                               <div className="flex gap-4">
                                 <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-border/50">
-                                  {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center bg-zinc-900"><Zap className="w-6 h-6 text-gold/50" /></div> : <img src={b.media_url} className="w-full h-full object-cover" />}
+                                  {b.media_type === 'video' ? <div className="w-full h-full flex items-center justify-center bg-zinc-900"><Zap className="w-6 h-6 text-gold" /></div> : <img src={b.media_url} className="w-full h-full object-cover" />}
                                 </div>
                                 <div className="flex-grow min-w-0">
                                   <h4 className={`font-bold text-base leading-tight truncate ${b.is_offer ? 'text-gold' : ''}`}>{b.title}</h4>
@@ -1015,7 +1015,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Bubble Offer Text</label><Input placeholder="🔥 Special Offer! Only ₹399" defaultValue={offerStats?.floating_bubble_text || ""} id="bubbleText" className="bg-background" /></div>
                       <div className="space-y-1"><label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">CTA Button Label</label><Input placeholder="Grab Now" defaultValue={offerStats?.floating_bubble_cta || ""} id="bubbleCta" className="bg-background" /></div>
-                      <Button className="w-full bg-gold hover:bg-gold text-black font-bold" onClick={async () => { const text = (document.getElementById("bubbleText") as HTMLInputElement)?.value; const cta = (document.getElementById("bubbleCta") as HTMLInputElement)?.value; try { await authFetch("/api/offers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ floating_bubble_text: text, floating_bubble_cta: cta }) }); toast.success("Bubble settings saved!"); } catch {} }}>Save Bubble Settings</Button>
+                      <Button className="w-full bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-10" onClick={async () => { const text = (document.getElementById("bubbleText") as HTMLInputElement)?.value; const cta = (document.getElementById("bubbleCta") as HTMLInputElement)?.value; try { await authFetch("/api/offers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ floating_bubble_text: text, floating_bubble_cta: cta }) }); toast.success("Bubble settings saved!"); } catch {} }}>Save Bubble Settings</Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -1087,7 +1087,7 @@ export default function AdminDashboard() {
                             </div>
                           )}
 
-                          <Button className="w-full mt-3 bg-gold hover:bg-gold-dark text-black font-bold h-10" disabled={uploading}>
+                          <Button className="w-full mt-3 bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-11 text-sm tracking-wide uppercase" disabled={uploading}>
                             {uploading ? "Uploading to Cloud..." : (editingSampleId ? "Update Portfolio Item" : "Publish to Portfolio")}
                           </Button>
                           {editingSampleId && (
@@ -1193,7 +1193,7 @@ export default function AdminDashboard() {
                           <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Cover Preview</label><Input type="file" onChange={e => setPromptFile(e.target.files?.[0] || null)} className="bg-secondary/30" /></div>
                           <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Image Prompt</label><textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30" placeholder="Enter detailed prompt..." value={promptForm.image_prompt} onChange={e => setPromptForm({...promptForm, image_prompt: e.target.value})} /></div>
                           <div className="space-y-1"><label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">Video Prompt</label><textarea className="w-full bg-secondary/30 border border-border p-3 rounded-lg text-sm min-h-[100px] outline-none focus:ring-1 focus:ring-gold/30" placeholder="Enter video motion prompt..." value={promptForm.video_prompt} onChange={e => setPromptForm({...promptForm, video_prompt: e.target.value})} /></div>
-                          <Button type="submit" className="w-full" disabled={uploading}>{uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save to Library")}</Button>
+                          <Button type="submit" className="w-full bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-10" disabled={uploading}>{uploading ? "Saving..." : (editingPromptId ? "Update Prompt" : "Save to Library")}</Button>
                           {editingPromptId && <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingPromptId(null); setPromptForm({ title: '', brand: '', image_prompt: '', negative_prompt: '', video_prompt: '', media_url: '', is_free: true }); }}>Cancel Edit</Button>}
                         </form>
                       </CardContent>
@@ -1247,7 +1247,7 @@ export default function AdminDashboard() {
                             <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">PDF File</label>
                             <Input type="file" accept=".pdf,application/pdf" onChange={e => setResourceFile(e.target.files?.[0] || null)} className="bg-secondary/30" />
                           </div>
-                          <Button type="submit" className="w-full font-bold" disabled={uploading}>
+                          <Button type="submit" className="w-full bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-10" disabled={uploading}>
                             {uploading ? "Uploading..." : "Publish Resource"}
                           </Button>
                         </form>
