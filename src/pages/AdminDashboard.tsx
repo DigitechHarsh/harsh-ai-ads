@@ -255,6 +255,88 @@ export default function AdminDashboard() {
   const [sampleMediaType, setSampleMediaType] = useState<"video" | "image" | "teaser">("video");
   const [sampleUrl, setSampleUrl] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadStatus, setUploadStatus] = useState<string>("");
+
+  // Fast direct server upload with real-time progress
+  const uploadFileWithProgress = (file: File, resourceType: "auto" | "raw" | "image" | "video" = "auto"): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      setUploadProgress(0);
+      setUploadStatus("Preparing upload...");
+
+      const xhr = new XMLHttpRequest();
+      const token = localStorage.getItem("token");
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+          const loadedMB = (event.loaded / (1024 * 1024)).toFixed(1);
+          const totalMB = (event.total / (1024 * 1024)).toFixed(1);
+          setUploadStatus(`Uploading: ${percent}% (${loadedMB}MB / ${totalMB}MB)`);
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            setUploadProgress(100);
+            setUploadStatus("Processing complete!");
+            resolve(data.url || data.secure_url);
+          } catch (e) {
+            reject(new Error("Invalid server response"));
+          }
+        } else {
+          // Cloudinary fallback
+          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dkylo3r27";
+          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "shzrlahh";
+          if (cloudName && uploadPreset) {
+            setUploadStatus("Falling back to cloud...");
+            const cloudXhr = new XMLHttpRequest();
+            const isVideo = file.type.startsWith("video/") || resourceType === "video";
+            cloudXhr.upload.addEventListener("progress", (e) => {
+              if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                setUploadProgress(percent);
+                setUploadStatus(`Cloud upload: ${percent}%`);
+              }
+            });
+            cloudXhr.addEventListener("load", () => {
+              if (cloudXhr.status >= 200 && cloudXhr.status < 300) {
+                const cloudData = JSON.parse(cloudXhr.responseText);
+                resolve(cloudData.secure_url);
+              } else {
+                reject(new Error("Upload failed. Try pasting a direct video URL."));
+              }
+            });
+            cloudXhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+            const cloudForm = new FormData();
+            cloudForm.append("file", file);
+            cloudForm.append("upload_preset", uploadPreset);
+            cloudXhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/${isVideo ? "video" : "image"}/upload`);
+            cloudXhr.send(cloudForm);
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Network error during upload"));
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      xhr.open("POST", "/api/upload");
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.send(formData);
+    });
+  };
+
+  const uploadToCloudinary = async (file: File, resourceType: "auto" | "raw" | "image" | "video" = "auto") => {
+    return uploadFileWithProgress(file, resourceType);
+  };
 
   // Offer Stats
   const [offerStats, setOfferStats] = useState<{ total_claimed: number; claim_limit: number; floating_bubble_enabled?: boolean; floating_bubble_text?: string; floating_bubble_cta?: string; } | null>(null);
@@ -369,52 +451,6 @@ export default function AdminDashboard() {
     }
     if (!res.ok) throw new Error(await res.text());
     return res.json();
-  };
-
-  const uploadToCloudinary = async (file: File, resourceType: "auto" | "raw" | "image" | "video" = "auto") => {
-    const isVideo = file.type.startsWith("video/") || resourceType === "video";
-    const actualType = isVideo ? "video" : (resourceType !== "auto" ? resourceType : (file.type.startsWith("image/") ? "image" : "auto"));
-
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dkylo3r27";
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "shzrlahh";
-
-    // Try Cloudinary Direct Upload
-    if (cloudName && uploadPreset) {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", uploadPreset);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${actualType}/upload`, { 
-          method: "POST", 
-          body: formData 
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          if (data.secure_url) return data.secure_url;
-        }
-      } catch (cloudErr) {
-        console.warn("Direct Cloudinary upload failed, falling back to server upload:", cloudErr);
-      }
-    }
-
-    // Fallback: Direct Server Upload via /api/upload
-    const serverFormData = new FormData();
-    serverFormData.append("file", file);
-    const token = localStorage.getItem("token");
-    const serverRes = await fetch("/api/upload", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: serverFormData,
-    });
-
-    if (!serverRes.ok) {
-      const serverErr = await serverRes.json().catch(() => ({ error: "Server upload failed" }));
-      throw new Error(serverErr.error || "Failed to upload media file. Please try again or provide a direct URL.");
-    }
-
-    const serverData = await serverRes.json();
-    return serverData.secure_url || serverData.url;
   };
 
   const fetchPrompts = async () => {
@@ -1075,14 +1111,34 @@ export default function AdminDashboard() {
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media Direct URL (Optional)</label>
+                            <div className="flex items-center justify-between">
+                              <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Media Direct URL (Recommended for Instant Speed)</label>
+                              <span className="text-[9px] text-gold font-bold">⚡ Instant 0s</span>
+                            </div>
                             <Input placeholder="https://res.cloudinary.com/... or MP4 link" value={sampleUrl} onChange={e => setSampleUrl(e.target.value)} className="bg-background text-xs" />
+                            <p className="text-[9px] text-muted-foreground ml-1">Tip: Paste any direct MP4 / Cloudinary / CDN video URL for instant publish without waiting.</p>
                           </div>
 
                           <div className="space-y-1">
-                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Or Upload Media File</label>
+                            <label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Or Upload Media File from Device</label>
                             <Input type="file" accept="image/*,video/*" onChange={e => setFile(e.target.files?.[0] || null)} className="bg-background" />
                           </div>
+
+                          {/* Real-time Upload Progress Bar */}
+                          {uploading && (
+                            <div className="space-y-2 p-3 rounded-xl bg-gold/10 border border-gold/30">
+                              <div className="flex justify-between text-xs font-bold text-gold">
+                                <span>{uploadStatus || "Uploading..."}</span>
+                                <span>{uploadProgress}%</span>
+                              </div>
+                              <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gold-gradient transition-all duration-300 rounded-full" 
+                                  style={{ width: `${uploadProgress}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
 
                           {/* Live Preview Box */}
                           {(sampleUrl || file) && (
@@ -1108,7 +1164,7 @@ export default function AdminDashboard() {
                           )}
 
                           <Button className="w-full mt-3 bg-gold-gradient hover:opacity-95 text-black font-extrabold shadow-md shadow-gold/20 h-11 text-sm tracking-wide uppercase" disabled={uploading}>
-                            {uploading ? "Uploading to Cloud..." : (editingSampleId ? "Update Portfolio Item" : "Publish to Portfolio")}
+                            {uploading ? (uploadStatus || `Uploading ${uploadProgress}%...`) : (editingSampleId ? "Update Portfolio Item" : "Publish to Portfolio")}
                           </Button>
                           {editingSampleId && (
                             <Button variant="ghost" className="w-full text-xs" onClick={() => { setEditingSampleId(null); setTitle(""); setSampleUrl(""); setFile(null); }}>
