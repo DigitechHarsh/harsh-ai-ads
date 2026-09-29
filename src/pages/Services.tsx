@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import ServicesSection from "@/components/ServicesSection";
-import Cinematic3DSection from "@/components/Cinematic3DSection";
 import SolutionSection from "@/components/SolutionSection";
 import ContactForm from "@/components/ContactForm";
 import FinalCTA from "@/components/FinalCTA";
@@ -23,7 +22,6 @@ export default function Services() {
       </div>
 
       <ServicesSection />
-      <Cinematic3DSection />
       <SolutionSection />
       <ContactForm />
       <FinalCTA />

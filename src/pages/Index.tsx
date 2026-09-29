@@ -13,7 +13,6 @@ import FinalCTA from "@/components/FinalCTA";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import PricingSection from "@/components/PricingSection";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
-import Cinematic3DSection from "@/components/Cinematic3DSection";
 
 // Import assets for slider
 import beforeImg from "@/assets/before.png";
@@ -67,7 +66,6 @@ const Index = () => {
       <SolutionSection />
       <BeforeAfterSlider beforeImage={beforeImg} afterImage={afterImg} />
       <ServicesSection />
-      <Cinematic3DSection />
       <ProcessSection />
       <SamplesSection />
       <TestimonialsSection />
