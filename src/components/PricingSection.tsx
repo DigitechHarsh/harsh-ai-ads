@@ -165,9 +165,11 @@ const PricingCard = ({ plan, index }: { plan: typeof pricingPlans[0]; index: num
             ))}
           </div>
 
-          <Button className="w-full mt-auto bg-white/5 hover:bg-gold hover:text-black border border-white/10 hover:border-gold transition-all duration-300 font-bold rounded-xl py-6">
-            {plan.btnText}
-          </Button>
+          <a href="#form" className="w-full mt-auto">
+            <Button className={`w-full ${plan.popular ? 'bg-gold-gradient text-black font-extrabold shadow-lg shadow-gold/30' : 'bg-gold-gradient text-black font-extrabold shadow-md shadow-gold/20'} hover:opacity-95 hover:scale-[1.02] active:scale-95 transition-all duration-300 rounded-xl py-6 text-sm uppercase tracking-wider`}>
+              {plan.btnText}
+            </Button>
+          </a>
         </div>
       </motion.div>
     </motion.div>

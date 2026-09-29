@@ -139,9 +139,9 @@ const HeroSection = () => {
             <div key={banner.id} className="embla__slide flex-[0_0_100%] min-w-0 relative">
               <div className="container max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-4 lg:gap-8 items-center py-4 md:py-6 lg:py-8">
 
-                {/* Left — text with gentle parallax */}
+                {/* Left — text with gentle parallax (order-2 on mobile, order-1 on desktop) */}
                 <motion.div
-                  className="space-y-3 md:space-y-4 text-left z-10 p-1 md:p-2"
+                  className="space-y-3 md:space-y-4 text-left z-10 p-1 md:p-2 order-2 md:order-1"
                   style={{ x: text_x, y: text_y }}
                 >
                   <motion.div
@@ -255,7 +255,7 @@ const HeroSection = () => {
                   onMouseMove={onImgMove}
                   onMouseLeave={onImgLeave}
                   style={{ x: img_x, y: img_y }}
-                  className="perspective-container relative w-full max-w-sm sm:max-w-md lg:max-w-lg aspect-[16/10] sm:aspect-[4/3] md:aspect-[4/3] lg:aspect-[4/3] max-h-[360px] lg:max-h-[420px] mx-auto"
+                  className="perspective-container relative w-full max-w-sm sm:max-w-md lg:max-w-lg aspect-[16/10] sm:aspect-[4/3] md:aspect-[4/3] lg:aspect-[4/3] max-h-[360px] lg:max-h-[420px] mx-auto order-1 md:order-2"
                 >
                   {/* Outer glow rings */}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
