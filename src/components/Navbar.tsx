@@ -60,9 +60,9 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-500 ${
-        scrolled
-          ? "glassmorphism border-b border-white/5 py-3"
+      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
+        scrolled || isOpen
+          ? "bg-[#09090b]/95 backdrop-blur-2xl border-b border-gold/15 py-3 shadow-2xl"
           : "bg-transparent py-5"
       }`}
     >
@@ -74,7 +74,7 @@ const Navbar = () => {
 
       <div className="container max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to="/" className="flex items-center gap-3 group" onClick={() => setIsOpen(false)}>
           <motion.div
             whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
             transition={{ duration: 0.4 }}
@@ -120,7 +120,7 @@ const Navbar = () => {
             <motion.button
               whileHover={{ scale: 1.05, y: -1 }}
               whileTap={{ scale: 0.95 }}
-              className="relative group overflow-hidden bg-gold-gradient text-primary-foreground text-xs font-bold px-6 py-2.5 rounded-full uppercase tracking-widest"
+              className="relative group overflow-hidden bg-gold-gradient text-black font-extrabold text-xs px-6 py-2.5 rounded-full uppercase tracking-widest shadow-md shadow-gold/20"
             >
               {/* Shine sweep */}
               <motion.div
@@ -130,7 +130,7 @@ const Navbar = () => {
                 transition={{ duration: 0.5 }}
               />
               <span className="relative flex items-center gap-1.5">
-                <Zap className="w-3 h-3" />
+                <Zap className="w-3.5 h-3.5 fill-black" />
                 Get Started
               </span>
             </motion.button>
@@ -139,18 +139,19 @@ const Navbar = () => {
 
         {/* Mobile Toggle */}
         <motion.button
-          className="md:hidden text-foreground p-2 rounded-lg glassmorphism"
+          className="md:hidden text-foreground p-2.5 rounded-xl bg-secondary/60 border border-white/10"
           onClick={() => setIsOpen(!isOpen)}
           whileTap={{ scale: 0.9 }}
+          aria-label="Toggle menu"
         >
           <AnimatePresence mode="wait">
             {isOpen ? (
               <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-gold" />
               </motion.div>
             ) : (
               <motion.div key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5 text-foreground" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -161,22 +162,22 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0, y: -10 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden glassmorphism border-b border-white/5 overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="md:hidden bg-[#09090b]/98 backdrop-blur-3xl border-b border-gold/20 shadow-2xl overflow-hidden"
           >
-            <div className="flex flex-col p-6 gap-2">
+            <div className="flex flex-col p-4 gap-1.5 bg-[#101015]/95 border border-white/10 rounded-2xl mx-4 my-3 shadow-2xl">
               {navLinks.map((link, index) => (
                 <Link
                   key={link.name}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`text-base font-bold uppercase tracking-widest py-2 px-4 rounded-xl transition-colors ${
+                  className={`text-sm font-bold uppercase tracking-wider py-2.5 px-4 rounded-xl transition-all ${
                     activeIdx === index 
-                      ? "text-gold bg-gold/10" 
-                      : "text-muted-foreground hover:text-gold hover:bg-gold/5"
+                      ? "text-gold bg-gold/15 border border-gold/30 shadow-sm" 
+                      : "text-neutral-300 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   {link.name}
@@ -185,10 +186,10 @@ const Navbar = () => {
               <Link
                 to="/#form"
                 onClick={() => setIsOpen(false)}
-                className="mt-3"
+                className="mt-2 pt-2 border-t border-white/10"
               >
-                <button className="w-full bg-gold-gradient text-primary-foreground text-sm font-bold px-6 py-3.5 rounded-2xl uppercase tracking-widest flex items-center justify-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                <button className="w-full bg-gold-gradient text-black font-extrabold text-xs py-3.5 px-4 rounded-xl uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-gold/25 active:scale-95 transition-transform">
+                  <Sparkles className="w-4 h-4 fill-black" />
                   Get Started
                 </button>
               </Link>
